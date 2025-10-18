@@ -6,4 +6,20 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1"/>
+        <PackageReference Include="Antlr4BuildTasks" Version="12.10.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Antlr4 Include="..\CubeCell.Parser.Grammar\CubeCell.g4">
+            <Generator>MSBuild:Compile</Generator>
+            <Listener>true</Listener>
+            <Visitor>true</Visitor>
+        </Antlr4>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CubeCell.Parser.Grammar\CubeCell.Parser.Grammar.csproj" />
+    </ItemGroup>
 </Project>

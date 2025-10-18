@@ -26,4 +26,8 @@
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6"/>
         <PackageReference Include="Spreadalonia" Version="1.1.0"/>
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CubeCell.Parser\CubeCell.Parser.csproj" />
+    </ItemGroup>
 </Project>
