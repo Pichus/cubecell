@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:CubeCell.App.ViewModels"
+             x:DataType="vm:WelcomePageViewModel"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="CubeCell.App.Views.Welcome">
+    <StackPanel>
+        <TextBlock>Welcome page</TextBlock>
+        <Button Command="{Binding GoToSpreadSheetEditorPageCommand}" Content="Go to spreadsheet editor" />
+        <Button Command="{Binding GoToAboutPageCommand}" Content="Go to about page" />
+    </StackPanel>
+</UserControl>

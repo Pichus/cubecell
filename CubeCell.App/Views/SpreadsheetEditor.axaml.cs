@@ -1,0 +1,15 @@
+using Avalonia.Markup.Xaml;
+using Avalonia.ReactiveUI;
+using CubeCell.App.ViewModels;
+using ReactiveUI;
+
+namespace CubeCell.App.Views;
+
+public partial class SpreadsheetEditor : ReactiveUserControl<SpreadsheetEditorPageViewModel>
+{
+    public SpreadsheetEditor()
+    {
+        this.WhenActivated(disposables => { });
+        AvaloniaXamlLoader.Load(this);
+    }
+}

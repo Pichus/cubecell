@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:rxui="http://reactiveui.net"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:app="clr-namespace:CubeCell"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:CubeCell.App.ViewModels"
+        xmlns:app1="clr-namespace:CubeCell.App"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CubeCell.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="CubeCell.App">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <rxui:RoutedViewHost Router="{Binding Router}">
+        <rxui:RoutedViewHost.ViewLocator>
+            <app1:AppViewLocator />
+        </rxui:RoutedViewHost.ViewLocator>
+    </rxui:RoutedViewHost>
+
+</Window>
