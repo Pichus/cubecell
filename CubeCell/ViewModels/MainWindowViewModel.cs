@@ -1,6 +1,13 @@
-﻿namespace CubeCell.ViewModels;
+﻿using ReactiveUI;
 
-public class MainWindowViewModel : ViewModelBase
+namespace CubeCell.ViewModels;
+
+public class MainWindowViewModel : ViewModelBase, IScreen
 {
-    public string Greeting { get; } = "Welcome to Avalonia!";
+    public MainWindowViewModel()
+    {
+        Router.Navigate.Execute(new WelcomePageViewModel(this));
+    }
+
+    public RoutingState Router { get; } = new();
 }
