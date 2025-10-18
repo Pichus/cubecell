@@ -2,7 +2,7 @@ using System;
 using Avalonia;
 using Spreadalonia;
 
-namespace CubeCell.Views;
+namespace CubeCell.Views.Components;
 
 public class ExtendedSpreadsheet : Spreadsheet
 {
