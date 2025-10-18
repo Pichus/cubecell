@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CubeCell.App", "CubeCell.App\CubeCell.App.csproj", "{C838E8ED-7385-4B12-8D36-B01B6FD6BF97}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "src\CubeCell.App", "src\CubeCell.App\CubeCell.App.csproj", "{C838E8ED-7385-4B12-8D36-B01B6FD6BF97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
