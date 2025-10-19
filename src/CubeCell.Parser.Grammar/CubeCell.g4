@@ -11,8 +11,8 @@ expression
     | expression ('+' | '-') expression                   # AddSubExpr
     | expression ('=' | '<' | '>') expression            # ComparisonExpr
     | expression ('<=' | '>=' | '<>') expression         # ComparisonExpr2
-    | 'not' expression                                    # NotExpr
-    | expression ('or' | 'and') expression               # LogicalExpr
+    | 'NOT' expression                                    # NotExpr
+    | expression ('OR' | 'AND') expression               # LogicalExpr
     | functionCall                                        # FunctionExpr
     | cellReference                                       # CellRefExpr
     | number                                              # NumberExpr
@@ -25,8 +25,8 @@ functionCall
     ;
 
 cellReference
-    : COLUMN ROW (':' COLUMN ROW)?                        # AbsoluteOrRelativeCell
-    | '$' COLUMN '$' ROW (':' '$' COLUMN '$' ROW)?       # AbsoluteCell
+    : CELL_REF                                            # SimpleCell
+    | CELL_REF ':' CELL_REF                              # RangeCell
     ;
 
 number
@@ -37,7 +37,11 @@ string
     : STRING
     ;
 
-// Lexer Rules
+// Lexer Rules (ORDER MATTERS!)
+CELL_REF
+    : '$'? [A-Z]+ '$'? [0-9]+
+    ;
+
 NUMBER
     : '-'? [0-9]+ ('.' [0-9]+)?
     ;
@@ -47,15 +51,7 @@ STRING
     ;
 
 IDENTIFIER
-    : [a-zA-Z_][a-zA-Z0-9_]*
-    ;
-
-COLUMN
-    : [A-Z]+
-    ;
-
-ROW
-    : [0-9]+
+    : [A-Z][A-Z0-9_]*
     ;
 
 WS
