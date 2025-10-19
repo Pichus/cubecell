@@ -2,8 +2,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="CubeCell.App.App"
              xmlns:app="clr-namespace:CubeCell.App"
+             xmlns:conv="clr-namespace:CubeCell.App.Converters"
              RequestedThemeVariant="Light">
     <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Resources>
+        <conv:NullToBoolConverter x:Key="NullToBoolConverter" />
+    </Application.Resources>
+
 
     <Application.DataTemplates>
         <app:ViewLocator />

@@ -3,9 +3,120 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:CubeCell.App.ViewModels"
-             xmlns:components="clr-namespace:CubeCell.App.Views.Components"
-             x:DataType="vm:AboutPageViewModel"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:models="clr-namespace:CubeCell.App.Models"
+             x:DataType="vm:SpreadsheetEditorPageViewModel"
+             mc:Ignorable="d"
              x:Class="CubeCell.App.Views.SpreadsheetEditor">
-    <components:ExtendedSpreadsheet />
+
+    <DockPanel LastChildFill="True">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open..." />
+                <Separator />
+                <MenuItem Header="_Exit" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="Copy" />
+                <MenuItem Header="Paste" />
+            </MenuItem>
+        </Menu>
+
+        <!-- Formula bar pinned -->
+        <Border DockPanel.Dock="Top" Background="#fafafa" Padding="6"
+                BorderBrush="#ddd" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*">
+                <TextBlock Text="fx" FontWeight="Bold" Margin="0,0,6,0" VerticalAlignment="Center" />
+                <TextBox
+                    IsEnabled="{Binding SelectedCell, Converter={StaticResource NullToBoolConverter}, ConverterParameter=True}"
+                    Grid.Column="1" Text="{Binding SelectedCell.Formula, Mode=TwoWay}"
+                    VerticalContentAlignment="Center" MinHeight="28" LostFocus="FormulaInput_OnLostFocus" />
+            </Grid>
+        </Border>
+
+        <!-- One ScrollViewer: headers + cells scroll together -->
+        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      Background="White">
+
+            <!-- 2x2 grid: corner, column headers, row headers, cells -->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Corner -->
+                <Border Grid.Row="0" Grid.Column="0"
+                        Background="#f3f3f3" BorderBrush="#ccc" BorderThickness="0,0,1,1"
+                        MinWidth="44" MinHeight="24" />
+
+                <!-- Column headers: use UniformGrid to match exact column count & cell width -->
+                <ItemsControl Grid.Row="0" Grid.Column="1" ItemsSource="{Binding ColumnHeaders}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="{Binding ColCount}" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#f3f3f3" BorderBrush="#ccc" BorderThickness="0,0,1,1"
+                                    Width="100"
+                                    Height="24">
+                                <TextBlock Text="{Binding}" FontWeight="Bold"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Row headers: UniformGrid to match row count & cell height -->
+                <ItemsControl Grid.Row="1" Grid.Column="0" ItemsSource="{Binding RowHeaders}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="{Binding RowCount}" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#f3f3f3" BorderBrush="#ccc" BorderThickness="0,0,1,1"
+                                    Width="44"
+                                    Height="28">
+                                <TextBlock Text="{Binding}" FontWeight="Bold"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Cells grid -->
+                <ItemsControl Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Cells}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="{Binding RowCount}" Columns="{Binding ColCount}" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:CellModel">
+                            <Border BorderBrush="#ccc" BorderThickness="0,0,1,1"
+                                    Width="100"
+                                    Height="28">
+                                <TextBox
+                                    Text="{Binding DisplayText, Mode=TwoWay}"
+                                    BorderThickness="0" Padding="4"
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                    HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
+                                    GotFocus="CellInput_OnGotFocus"
+                                    LostFocus="CellInput_OnLostFocus" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </Grid>
+        </ScrollViewer>
+    </DockPanel>
 </UserControl>
