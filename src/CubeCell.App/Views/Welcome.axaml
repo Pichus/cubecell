@@ -5,10 +5,291 @@
              xmlns:vm="clr-namespace:CubeCell.App.ViewModels"
              x:DataType="vm:WelcomePageViewModel"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="CubeCell.App.Views.Welcome">
-    <StackPanel>
-        <TextBlock>Welcome page</TextBlock>
-        <Button Command="{Binding GoToSpreadSheetEditorPageCommand}" Content="Go to spreadsheet editor" />
-        <Button Command="{Binding GoToAboutPageCommand}" Content="Go to about page" />
-    </StackPanel>
+             x:Class="CubeCell.App.Views.Welcome"
+             Background="#F5F5F5">
+
+    <Border MaxWidth="900"
+            Background="White"
+            CornerRadius="12"
+            BoxShadow="0 4 20 0 #15000000"
+            Padding="40"
+            Margin="20"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center">
+
+        <Grid ColumnDefinitions="*,20,*">
+
+            <!-- Left: Create New -->
+            <StackPanel Grid.Column="0" Spacing="30">
+
+                <!-- Header -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="CubeCell"
+                               FontSize="32"
+                               FontWeight="Bold"
+                               Foreground="#2C3E50"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="Create a new spreadsheet"
+                               FontSize="16"
+                               Foreground="#7F8C8D"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Form -->
+                <StackPanel Spacing="20">
+
+                    <!-- Rows -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Rows"
+                                   FontWeight="SemiBold"
+                                   Foreground="#34495E"
+                                   FontSize="14" />
+                        <TextBox Text="{Binding RowCount}"
+                                 Padding="12"
+                                 CornerRadius="6"
+                                 BorderBrush="#E0E0E0"
+                                 BorderThickness="1"
+                                 Watermark="Enter number of rows" />
+                    </StackPanel>
+
+                    <!-- Columns -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Columns"
+                                   FontWeight="SemiBold"
+                                   Foreground="#34495E"
+                                   FontSize="14" />
+                        <TextBox Text="{Binding ColCount}"
+                                 Padding="12"
+                                 CornerRadius="6"
+                                 BorderBrush="#E0E0E0"
+                                 BorderThickness="1"
+                                 Watermark="Enter number of columns" />
+                    </StackPanel>
+
+                    <!-- Create Button -->
+                    <Button Command="{Binding GoToSpreadSheetEditorPageCommand}"
+                            Background="#3498DB"
+                            Foreground="White"
+                            Padding="16,12"
+                            CornerRadius="6"
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Cursor="Hand">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Background" Value="#2980B9" />
+                            </Style>
+                            <Style Selector="Button:pressed">
+                                <Setter Property="Background" Value="#2471A3" />
+                            </Style>
+                        </Button.Styles>
+                        Create Spreadsheet
+                    </Button>
+
+                </StackPanel>
+
+                <!-- Divider -->
+                <Border Height="1" Background="#E0E0E0" Margin="0,10" />
+
+                <!-- About Link -->
+                <Button Command="{Binding GoToAboutPageCommand}"
+                        Background="Transparent"
+                        Foreground="#7F8C8D"
+                        BorderThickness="0"
+                        Padding="0"
+                        HorizontalAlignment="Center"
+                        FontSize="14"
+                        Cursor="Hand">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover">
+                            <Setter Property="Foreground" Value="#3498DB" />
+                        </Style>
+                    </Button.Styles>
+                    <TextBlock Text="About CubeCell" TextDecorations="Underline" />
+                </Button>
+
+            </StackPanel>
+
+            <!-- Vertical Divider -->
+            <Border Grid.Column="1"
+                    Width="1"
+                    Background="#E0E0E0"
+                    Margin="0,20" />
+
+            <!-- Right: Google Drive -->
+            <StackPanel Grid.Column="2" Spacing="25">
+
+                <!-- Google Drive Header -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Google Drive"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="#2C3E50"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="Open recent spreadsheets"
+                               FontSize="14"
+                               Foreground="#7F8C8D"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <!-- If NOT authorized -->
+                <StackPanel Spacing="20" IsVisible="{Binding !IsGoogleAuthorized}">
+
+                    <Border Background="#F8F9FA"
+                            CornerRadius="8"
+                            Padding="20"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="📁"
+                                       FontSize="32"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="Connect your Google account to access spreadsheets from Google Drive"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       Foreground="#5F6368"
+                                       FontSize="13" />
+                        </StackPanel>
+                    </Border>
+
+                    <Button Command="{Binding GoogleSignInCommand}"
+                            Background="White"
+                            Foreground="#5F6368"
+                            BorderBrush="#DADCE0"
+                            BorderThickness="1"
+                            Padding="16,12"
+                            CornerRadius="6"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Cursor="Hand">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Background" Value="#F8F9FA" />
+                            </Style>
+                        </Button.Styles>
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="🔐" FontSize="16" />
+                            <TextBlock Text="Sign in with Google" />
+                        </StackPanel>
+                    </Button>
+
+                </StackPanel>
+
+                <!-- If authorized - Show recent files -->
+                <StackPanel Spacing="15" IsVisible="{Binding IsGoogleAuthorized}">
+
+                    <!-- User info -->
+                    <Border Background="#F8F9FA"
+                            CornerRadius="8"
+                            Padding="12">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Border Width="32"
+                                    Height="32"
+                                    CornerRadius="16"
+                                    Background="#3498DB">
+                                <TextBlock Text="{Binding GoogleUserInitial}"
+                                           Foreground="White"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="{Binding GoogleUserName}"
+                                           FontWeight="SemiBold"
+                                           FontSize="13" />
+                                <TextBlock Text="{Binding GoogleUserEmail}"
+                                           FontSize="11"
+                                           Foreground="#7F8C8D" />
+                            </StackPanel>
+                            <Button Command="{Binding GoogleSignOutCommand}"
+                                    Background="Transparent"
+                                    Foreground="#E74C3C"
+                                    BorderThickness="0"
+                                    Content="Sign out"
+                                    FontSize="12"
+                                    Padding="8,4"
+                                    HorizontalAlignment="Right"
+                                    Margin="10,0,0,0"
+                                    Cursor="Hand">
+                                <Button.Styles>
+                                    <Style Selector="Button:pointerover">
+                                        <Setter Property="Foreground" Value="#C0392B" />
+                                    </Style>
+                                </Button.Styles>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Recent files list -->
+                    <TextBlock Text="Recent spreadsheets"
+                               FontWeight="SemiBold"
+                               FontSize="13"
+                               Foreground="#34495E"
+                               Margin="0,5,0,0" />
+
+                    <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding RecentGoogleFiles}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding $parent[UserControl]}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="12,10"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Cursor="Hand"
+                                            Margin="0,0,0,4">
+                                        <Button.Styles>
+                                            <Style Selector="Button:pointerover">
+                                                <Setter Property="Background" Value="#F8F9FA" />
+                                            </Style>
+                                        </Button.Styles>
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="test"
+                                                       FontWeight="Medium"
+                                                       FontSize="13"
+                                                       Foreground="#2C3E50" />
+                                            <TextBlock Text="test"
+                                                       FontSize="11"
+                                                       Foreground="#95A5A6" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Refresh button -->
+                    <Button Command="{Binding RefreshGoogleFilesCommand}"
+                            Background="Transparent"
+                            Foreground="#3498DB"
+                            BorderBrush="#3498DB"
+                            BorderThickness="1"
+                            Padding="12,8"
+                            CornerRadius="6"
+                            FontSize="13"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Cursor="Hand">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover">
+                                <Setter Property="Background" Value="#EBF5FB" />
+                            </Style>
+                        </Button.Styles>
+                        Refresh
+                    </Button>
+
+                </StackPanel>
+
+            </StackPanel>
+
+        </Grid>
+
+    </Border>
+
 </UserControl>
