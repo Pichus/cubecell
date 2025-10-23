@@ -9,9 +9,9 @@ namespace CubeCell.App.ViewModels;
 
 public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
 {
+    private const string FormulaPrefix = "=";
     private readonly FormulaEvaluator _formulaEvaluator = new();
     private int _colCount;
-    private string _formulaText = string.Empty;
     private int _rowCount;
 
     private CellModel? _selectedCell;
@@ -39,18 +39,11 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
             _selectedCell.MarkAsCalculated();
         });
 
-        for (var c = 0; c < ColCount; c++)
-            ColumnHeaders.Add(GetExcelColumnName(c));
+        InitializeColumnHeaders();
 
-        for (var r = 1; r <= RowCount; r++)
-            RowHeaders.Add(r);
+        InitializeRowHeaders();
 
-        for (var r = 0; r < RowCount; r++)
-        for (var c = 0; c < ColCount; c++)
-            Cells.Add(new CellModel
-            {
-                Formula = string.Empty, Value = string.Empty, DisplayText = string.Empty
-            });
+        InitializeCells();
     }
 
     public ReactiveCommand<CellModel?, Unit> CalculateCellFormulaCommand { get; }
@@ -80,28 +73,48 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
 
     public ObservableCollection<CellModel> Cells { get; } = new();
 
-    public string FormulaText
-    {
-        get => _formulaText;
-        set => this.RaiseAndSetIfChanged(ref _formulaText, value);
-    }
-
     public string? UrlPathSegment { get; } = "spreadsheetEditor";
     public IScreen HostScreen { get; }
 
+    private void InitializeRowHeaders()
+    {
+        for (var r = 1; r <= RowCount; r++)
+            RowHeaders.Add(r);
+    }
+
+    private void InitializeColumnHeaders()
+    {
+        for (var c = 0; c < ColCount; c++)
+            ColumnHeaders.Add(GetExcelColumnName(c));
+    }
+
+    private void InitializeCells()
+    {
+        for (var r = 0; r < RowCount; r++)
+        for (var c = 0; c < ColCount; c++)
+            Cells.Add(new CellModel
+            {
+                Formula = string.Empty, Value = string.Empty, DisplayText = string.Empty
+            });
+    }
+
     private void CalculateCellFormula(CellModel cell)
     {
-        if (cell.Formula is null || !cell.Formula.StartsWith("="))
+        if (cell.Formula is null || !IsFormula(cell.Formula))
             return;
 
         var calculated = _formulaEvaluator.Evaluate(cell.Formula).ToString();
-        Console.WriteLine(calculated);
+        Console.WriteLine(calculated); // for testing purposes
         cell.Value = calculated;
+    }
+
+    private bool IsFormula(string value)
+    {
+        return value.StartsWith(FormulaPrefix);
     }
 
     private static string GetExcelColumnName(int index)
     {
-        // Excel columns are 1-based (A = 1)
         index++;
         var columnName = string.Empty;
 
