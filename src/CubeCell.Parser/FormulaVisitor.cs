@@ -53,6 +53,4 @@ public class FormulaVisitor : CubeCellBaseVisitor<object>
     {
         return Visit(context.expression());
     }
-
-    // Add more visitor methods for other expression types as needed
 }
