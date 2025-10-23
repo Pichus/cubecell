@@ -5,9 +5,9 @@ using ReactiveUI;
 
 namespace CubeCell.App.Views;
 
-public partial class About : ReactiveUserControl<AboutPageViewModel>
+public partial class AboutPage : ReactiveUserControl<AboutPageViewModel>
 {
-    public About()
+    public AboutPage()
     {
         this.WhenActivated(disposables => { });
         AvaloniaXamlLoader.Load(this);

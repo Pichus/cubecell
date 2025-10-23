@@ -5,7 +5,7 @@
              xmlns:vm="clr-namespace:CubeCell.App.ViewModels"
              x:DataType="vm:WelcomePageViewModel"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="CubeCell.App.Views.Welcome"
+             x:Class="CubeCell.App.Views.WelcomePage"
              Background="#F5F5F5">
 
     <Border MaxWidth="900"

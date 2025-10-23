@@ -10,9 +10,9 @@ using ReactiveUI;
 
 namespace CubeCell.App.Views;
 
-public partial class SpreadsheetEditor : ReactiveUserControl<SpreadsheetEditorPageViewModel>
+public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEditorPageViewModel>
 {
-    public SpreadsheetEditor()
+    public SpreadsheetEditorPage()
     {
         this.WhenActivated(disposables => { });
         AvaloniaXamlLoader.Load(this);

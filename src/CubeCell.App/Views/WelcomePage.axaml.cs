@@ -5,9 +5,9 @@ using ReactiveUI;
 
 namespace CubeCell.App.Views;
 
-public partial class Welcome : ReactiveUserControl<WelcomePageViewModel>
+public partial class WelcomePage : ReactiveUserControl<WelcomePageViewModel>
 {
-    public Welcome()
+    public WelcomePage()
     {
         this.WhenActivated(disposables => { });
         AvaloniaXamlLoader.Load(this);

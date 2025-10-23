@@ -6,7 +6,7 @@
              xmlns:models="clr-namespace:CubeCell.App.Models"
              x:DataType="vm:SpreadsheetEditorPageViewModel"
              mc:Ignorable="d"
-             x:Class="CubeCell.App.Views.SpreadsheetEditor">
+             x:Class="CubeCell.App.Views.SpreadsheetEditorPage">
 
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
@@ -63,9 +63,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#f3f3f3" BorderBrush="#ccc" BorderThickness="0,0,1,1"
-                                    Width="100"
-                                    Height="24">
+                            <Border Background="#f3f3f3" BorderBrush="#ccc" BorderThickness="0,0,1,1">
                                 <TextBlock Text="{Binding}" FontWeight="Bold"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
@@ -82,9 +80,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#f3f3f3" BorderBrush="#ccc" BorderThickness="0,0,1,1"
-                                    Width="44"
-                                    Height="28">
+                            <Border Background="#f3f3f3" BorderBrush="#ccc" BorderThickness="0,0,1,1">
                                 <TextBlock Text="{Binding}" FontWeight="Bold"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
@@ -101,12 +97,10 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="models:CellModel">
-                            <Border BorderBrush="#ccc" BorderThickness="0,0,1,1"
-                                    Width="100"
-                                    Height="28">
+                            <Border BorderBrush="#ccc" BorderThickness="0,0,1,1">
                                 <TextBox
                                     Text="{Binding DisplayText, Mode=TwoWay}"
-                                    BorderThickness="0" Padding="4"
+                                    BorderThickness="0"
                                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                     HorizontalContentAlignment="Left" VerticalContentAlignment="Center"
                                     GotFocus="CellInput_OnGotFocus"
