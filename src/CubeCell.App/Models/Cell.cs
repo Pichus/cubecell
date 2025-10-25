@@ -2,12 +2,11 @@ using ReactiveUI;
 
 namespace CubeCell.App.Models;
 
-public class CellModel : ReactiveObject
+public class Cell : ReactiveObject
 {
     private string? _formula;
     private string? _lastCalculatedFormula;
     private string? _value;
-    public string Address { get; set; } = "";
 
     public string? Value
     {
