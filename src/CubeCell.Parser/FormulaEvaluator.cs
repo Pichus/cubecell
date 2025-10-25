@@ -4,6 +4,13 @@ namespace CubeCell.Parser;
 
 public class FormulaEvaluator
 {
+    private readonly Func<string, object?> _getCellValue;
+
+    public FormulaEvaluator(Func<string, object?> getCellValue)
+    {
+        _getCellValue = getCellValue;
+    }
+
     public object Evaluate(string formula)
     {
         if (formula.StartsWith("=")) formula = formula.Substring(1);
@@ -18,7 +25,7 @@ public class FormulaEvaluator
 
         var context = parser.expression();
 
-        var visitor = new FormulaVisitor();
+        var visitor = new FormulaVisitor(_getCellValue);
         return visitor.Visit(context);
     }
 }
