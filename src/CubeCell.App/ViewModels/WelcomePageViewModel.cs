@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Windows.Input;
+
 using ReactiveUI;
 
 namespace CubeCell.App.ViewModels;
@@ -15,9 +16,9 @@ public class WelcomePageViewModel : ViewModelBase, IRoutableViewModel
     {
         HostScreen = screen;
 
-        GoToAboutPageCommand =
-            ReactiveCommand.CreateFromObservable(() =>
-                HostScreen.Router.Navigate.Execute(new AboutPageViewModel(HostScreen)));
+        GoToAboutPageCommand = ReactiveCommand.CreateFromObservable(() =>
+            HostScreen.Router.Navigate.Execute(new AboutPageViewModel(HostScreen))
+        );
 
         GoToSpreadSheetEditorPageCommand =
             ReactiveCommand.CreateFromObservable(() =>
