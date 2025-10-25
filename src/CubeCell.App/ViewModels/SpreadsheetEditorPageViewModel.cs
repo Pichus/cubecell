@@ -16,7 +16,7 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
     private int _colCount;
     private int _rowCount;
 
-    private CellModel? _selectedCell;
+    private Cell? _selectedCell;
 
     public SpreadsheetEditorPageViewModel(IScreen hostScreen, int rowCount, int colCount)
     {
@@ -27,7 +27,7 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         _formulaEvaluator =
             new FormulaEvaluator(cellAddress => Cells[GetListIndexFromCellAddress(cellAddress, _colCount)].Value);
 
-        CalculateCellFormulaCommand = ReactiveCommand.Create((CellModel? cell = null) =>
+        CalculateCellFormulaCommand = ReactiveCommand.Create((Cell? cell = null) =>
         {
             if (cell is null || !cell.NeedsRecalculation)
             {
@@ -56,13 +56,13 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         InitializeCells();
     }
 
-    public ObservableCollection<CellModel> Cells { get; } = new();
+    public ObservableCollection<Cell> Cells { get; } = new();
 
-    public ReactiveCommand<CellModel?, Unit> CalculateCellFormulaCommand { get; }
+    public ReactiveCommand<Cell?, Unit> CalculateCellFormulaCommand { get; }
     public ReactiveCommand<Unit, Unit> CalculateSelectedCellFormulaCommand { get; }
 
 
-    public CellModel? SelectedCell
+    public Cell? SelectedCell
     {
         get => _selectedCell;
         set => this.RaiseAndSetIfChanged(ref _selectedCell, value);
@@ -107,11 +107,11 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         for (int r = 0; r < RowCount; r++)
         for (int c = 0; c < ColCount; c++)
         {
-            Cells.Add(new CellModel { Formula = string.Empty, Value = string.Empty, DisplayText = string.Empty });
+            Cells.Add(new Cell { Formula = string.Empty, Value = string.Empty, DisplayText = string.Empty });
         }
     }
 
-    private void CalculateCellFormula(CellModel cell)
+    private void CalculateCellFormula(Cell cell)
     {
         if (cell.Formula is null || !IsFormula(cell.Formula))
         {

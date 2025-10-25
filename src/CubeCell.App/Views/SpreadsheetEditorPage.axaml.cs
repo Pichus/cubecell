@@ -119,50 +119,60 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
     {
         for (var row = 0; row < rowCount; row++)
         {
-            var header = new Border
-            {
-                Background = Brush.Parse("#F3F3F3"),
-                BorderBrush = Brush.Parse("#D0D0D0"),
-                BorderThickness = new Thickness(0, 0, 1, 1),
-                Padding = new Thickness(2, 0, 2, 0),
-                Child = new TextBlock
-                {
-                    Text = (row + 1).ToString(),
-                    FontWeight = FontWeight.SemiBold,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Foreground = Brush.Parse("#333333")
-                }
-            };
+            Border header = CreateRowHeaderElement(row, (row + 1).ToString());
 
             RowHeaderGrid.Children.Add(header);
             Grid.SetRow(header, row);
         }
     }
 
+    private static Border CreateRowHeaderElement(int row, string text)
+    {
+        return new Border
+        {
+            Background = Brush.Parse("#F3F3F3"),
+            BorderBrush = Brush.Parse("#D0D0D0"),
+            BorderThickness = new Thickness(0, 0, 1, 1),
+            Padding = new Thickness(2, 0, 2, 0),
+            Child = new TextBlock
+            {
+                Text = text,
+                FontWeight = FontWeight.SemiBold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = Brush.Parse("#333333")
+            }
+        };
+    }
+
     private void FillColHeadersGrid(int colCount)
     {
         for (var col = 0; col < colCount; col++)
         {
-            Border header = new()
-            {
-                Background = Brush.Parse("#F3F3F3"),
-                BorderBrush = Brush.Parse("#D0D0D0"),
-                BorderThickness = new Thickness(0, 0, 1, 1),
-                Padding = new Thickness(2, 1, 1, 1),
-                Child = new TextBlock
-                {
-                    Text = GetColumnName(col),
-                    FontWeight = FontWeight.SemiBold,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Foreground = Brush.Parse("#333333")
-                }
-            };
+            Border header = CreateColHeaderElement(col);
 
             ColumnHeaderGrid.Children.Add(header);
             Grid.SetColumn(header, col);
         }
+    }
+
+    private static Border CreateColHeaderElement(int col)
+    {
+        return new Border
+        {
+            Background = Brush.Parse("#F3F3F3"),
+            BorderBrush = Brush.Parse("#D0D0D0"),
+            BorderThickness = new Thickness(0, 0, 1, 1),
+            Padding = new Thickness(2, 1, 1, 1),
+            Child = new TextBlock
+            {
+                Text = GetColumnName(col),
+                FontWeight = FontWeight.SemiBold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = Brush.Parse("#333333")
+            }
+        };
     }
 
     private static string GetColumnName(int index)
@@ -181,7 +191,7 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
     {
         if (DataContext is SpreadsheetEditorPageViewModel vm)
         {
-            if (sender is TextBox button && button.DataContext is CellModel cell)
+            if (sender is TextBox button && button.DataContext is Cell cell)
             {
                 vm.CalculateCellFormulaCommand.Execute(cell).Subscribe();
             }
@@ -192,7 +202,7 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
     {
         if (DataContext is SpreadsheetEditorPageViewModel vm)
         {
-            if (sender is TextBox button && button.DataContext is CellModel cell)
+            if (sender is TextBox button && button.DataContext is Cell cell)
             {
                 vm.SelectedCell = cell;
             }
