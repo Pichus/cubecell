@@ -1,10 +1,6 @@
-using System;
-using System.Collections.ObjectModel;
 using System.Reactive;
 
 using CubeCell.App.Models;
-using CubeCell.App.Utils;
-using CubeCell.Parser;
 
 using ReactiveUI;
 
@@ -12,12 +8,14 @@ namespace CubeCell.App.ViewModels;
 
 public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
 {
-    private const string FormulaPrefix = "=";
-    private readonly FormulaEvaluator _formulaEvaluator;
-    private int _colCount;
-    private int _rowCount;
+    private readonly Spreadsheet _spreadsheet = new();
+    private readonly SpreadsheetViewModel _spreadsheetViewModel = new();
 
-    private Cell? _selectedCell;
+    private int _colCount;
+
+    private CellViewModel? _lastSelectedCell;
+    private CellCoordinates? _lastSelectedCellCoordinates;
+    private int _rowCount;
 
     public SpreadsheetEditorPageViewModel(IScreen hostScreen, int rowCount, int colCount)
     {
@@ -25,50 +23,27 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         _rowCount = rowCount;
         ColCount = colCount;
 
-        // _formulaEvaluator =
-        //     new FormulaEvaluator(cellAddress => Cells[GetListIndexFromCellAddress(cellAddress, _colCount)].Value);
-
-        CalculateCellFormulaCommand = ReactiveCommand.Create((Cell? cell = null) =>
-        {
-            if (cell is null || !cell.NeedsRecalculation)
-            {
-                return;
-            }
-
-            CalculateCellFormula(cell);
-            cell.MarkAsCalculated();
-        });
-
-        CalculateSelectedCellFormulaCommand = ReactiveCommand.Create(() =>
-        {
-            if (_selectedCell is null || !_selectedCell.NeedsRecalculation)
-            {
-                return;
-            }
-
-            CalculateCellFormula(_selectedCell);
-            _selectedCell.MarkAsCalculated();
-        });
-
-        InitializeColumnHeaders();
-
-        InitializeRowHeaders();
+        AttachCellModelToCellViewModelCommand =
+            ReactiveCommand.Create<CellCoordinates>(AttachCellModelToCellViewModelCommandHandler);
+        CalculateCellFormulaCommand = ReactiveCommand.Create<CellCoordinates>(CalculateCellFormulaCommandHandler);
+        UpdateLastSelectedCellCommand = ReactiveCommand.Create<CellCoordinates>(UpdateLastSelectedCellCommandHandler);
+        CalculateSelectedCellFormulaCommand = ReactiveCommand.Create(CalculateSelectedCellFormulaCommandHandler);
+        AttachCellModelToLastSelectedCellViewModelCommand =
+            ReactiveCommand.Create(AttachCellModelToLastSelectedCellViewModelCommandHandler);
     }
 
-    public ObservableCollection<Cell> Cells { get; } = new();
-
-    public ReactiveCommand<Cell?, Unit> CalculateCellFormulaCommand { get; }
+    public ReactiveCommand<CellCoordinates, Unit> CalculateCellFormulaCommand { get; }
     public ReactiveCommand<Unit, Unit> CalculateSelectedCellFormulaCommand { get; }
 
+    public ReactiveCommand<CellCoordinates, Unit> AttachCellModelToCellViewModelCommand { get; }
+    public ReactiveCommand<Unit, Unit> AttachCellModelToLastSelectedCellViewModelCommand { get; }
+    public ReactiveCommand<CellCoordinates, Unit> UpdateLastSelectedCellCommand { get; }
 
-    public Cell? SelectedCell
+    public CellViewModel? LastSelectedCell
     {
-        get => _selectedCell;
-        set => this.RaiseAndSetIfChanged(ref _selectedCell, value);
+        get => _lastSelectedCell;
+        private set => this.RaiseAndSetIfChanged(ref _lastSelectedCell, value);
     }
-
-    public ObservableCollection<string> ColumnHeaders { get; } = new();
-    public ObservableCollection<int> RowHeaders { get; } = new();
 
     public int RowCount
     {
@@ -82,49 +57,106 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _colCount, value);
     }
 
+    public CellCoordinates? LastSelectedCellCoordinates
+    {
+        get => _lastSelectedCellCoordinates;
+        set => this.RaiseAndSetIfChanged(ref _lastSelectedCellCoordinates, value);
+    }
+
     public string? UrlPathSegment { get; } = "spreadsheetEditor";
     public IScreen HostScreen { get; }
 
-    private void InitializeRowHeaders()
+    private void AttachCellModelToLastSelectedCellViewModelCommandHandler()
     {
-        for (int r = 1; r <= RowCount; r++)
+        if (_lastSelectedCell is null || _lastSelectedCellCoordinates is null)
         {
-            RowHeaders.Add(r);
+            return;
         }
+        
+        AttachCellModelToCellViewModel(_lastSelectedCellCoordinates.Value, _lastSelectedCell);
     }
 
-    private void InitializeColumnHeaders()
+    private void CalculateSelectedCellFormulaCommandHandler()
     {
-        for (int c = 0; c < ColCount; c++)
+        if (_lastSelectedCellCoordinates is null || _lastSelectedCell is null)
         {
-            ColumnHeaders.Add(CellAddressUtils.ColumnIndexToLetters(c));
+            return;
         }
+        
+        CalculateCellFormula(_lastSelectedCellCoordinates.Value, _lastSelectedCell);
     }
 
-    private void CalculateCellFormula(Cell cell)
+    private void CalculateCellFormula(CellCoordinates cellCoordinates, CellViewModel cellViewModel)
     {
-        if (cell.Formula is null || !IsFormula(cell.Formula))
+        Cell? cellModel = _spreadsheet.GetCell(cellCoordinates.Col, cellCoordinates.Row);
+        
+        if (cellModel is null)
+        {
+            return;
+        }
+        
+        // TESTING
+        if (cellModel.Formula is null || !cellModel.Formula.StartsWith("="))
         {
             return;
         }
 
-        string? calculated = "";
+        cellModel.Value = "Calculated value";
+        // TESTING
 
-        try
-        {
-            calculated = _formulaEvaluator.Evaluate(cell.Formula).ToString();
-        }
-        catch (Exception exception)
-        {
-            calculated = "ERROR";
-        }
-
-        Console.WriteLine(calculated); // for testing purposes
-        cell.Value = calculated;
+        cellViewModel.Refresh();
     }
 
-    private bool IsFormula(string value)
+    private void UpdateLastSelectedCellCommandHandler(CellCoordinates cellCoordinates)
     {
-        return value.StartsWith(FormulaPrefix);
+        LastSelectedCellCoordinates = cellCoordinates;
+        LastSelectedCell = _spreadsheetViewModel.GetCell(cellCoordinates.Col, cellCoordinates.Row);
+    }
+
+    private void CalculateCellFormulaCommandHandler(CellCoordinates cellCoordinates)
+    {
+        CellViewModel? cellViewModel = _spreadsheetViewModel.GetCell(cellCoordinates.Col, cellCoordinates.Row);
+
+        if (cellViewModel is null)
+        {
+            return;
+        }
+
+        CalculateCellFormula(cellCoordinates, cellViewModel);
+    }
+
+    private void AttachCellModelToCellViewModelCommandHandler(CellCoordinates cellCoordinates)
+    {
+        CellViewModel? cellViewModel = _spreadsheetViewModel.GetCell(cellCoordinates.Col, cellCoordinates.Row);
+
+        if (cellViewModel is null)
+        {
+            return;
+        }
+
+        AttachCellModelToCellViewModel(cellCoordinates, cellViewModel);
+    }
+
+    private void AttachCellModelToCellViewModel(CellCoordinates cellCoordinates, CellViewModel cellViewModel)
+    {
+        var cellModel = new Cell { Formula = cellViewModel.Value, Value = cellViewModel.Value };
+
+        _spreadsheet.SetCell(cellCoordinates, cellModel);
+        cellViewModel.SetCellModel(cellModel);
+        cellViewModel.Refresh();
+    }
+    
+
+    public CellViewModel GetCellViewModelForBinding(CellCoordinates cellCoordinates)
+    {
+        CellViewModel? cellViewModel = _spreadsheetViewModel.GetCell(cellCoordinates.Col, cellCoordinates.Row);
+
+        if (cellViewModel is null)
+        {
+            cellViewModel = new CellViewModel();
+            _spreadsheetViewModel.SetCell(cellCoordinates, cellViewModel);
+        }
+
+        return cellViewModel;
     }
 }

@@ -46,8 +46,8 @@
                         BorderBrush="#BFBFBF"
                         BorderThickness="1"
                         Background="White">
-                    <TextBox Text="{Binding SelectedCell.Formula, Mode=TwoWay}"
-                             IsEnabled="{Binding SelectedCell, Converter={StaticResource NullToBoolConverter}, ConverterParameter=True}"
+                    <TextBox Text="{Binding LastSelectedCell.Formula, Mode=TwoWay}"
+                             IsEnabled="{Binding LastSelectedCell, Converter={StaticResource NullToBoolConverter}, ConverterParameter=True}"
                              Padding="6,2"
                              Margin="0"
                              FontSize="14"

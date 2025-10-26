@@ -1,7 +1,9 @@
 using System;
+using System.Reactive.Linq;
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -103,12 +105,23 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
         {
             for (var col = 0; col < colCount; col++)
             {
-                Border cell = CreateCellElement(CellAddressUtils.CoordinatesToAddress(col, row));
+                Border cellElement = CreateCellElement();
 
-                Grid.SetRow(cell, row);
-                Grid.SetColumn(cell, col);
+                CellViewModel? cellViewModelForBinding =
+                    ViewModel?.GetCellViewModelForBinding(new CellCoordinates(col, row));
 
-                CellsGrid.Children.Add(cell);
+                var textBox = (TextBox)cellElement.Child!;
+
+                textBox.Bind(TextBox.TextProperty,
+                    new Binding { Path = "DisplayText", Mode = BindingMode.TwoWay, Source = cellViewModelForBinding });
+
+                textBox.LostFocus += CellInput_OnLostFocus;
+                textBox.GotFocus += CellInput_OnGotFocus;
+
+                Grid.SetRow(cellElement, row);
+                Grid.SetColumn(cellElement, col);
+
+                CellsGrid.Children.Add(cellElement);
             }
         }
     }
@@ -151,62 +164,85 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
         };
     }
 
-    private static Border CreateCellElement(string text)
+    private Border CreateCellElement(string text = "")
     {
-        return new Border
+        var textBox = new TextBox
+        {
+            Text = text,
+            CornerRadius = new CornerRadius(0),
+            BorderThickness = new Thickness(0),
+            Margin = new Thickness(0),
+            Padding = new Thickness(4, 0, 4, 0),
+            Background = Brushes.White,
+            Foreground = Brushes.Black,
+            VerticalContentAlignment = VerticalAlignment.Center,
+            HorizontalContentAlignment = HorizontalAlignment.Left,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            FontSize = 14,
+            MinHeight = 0,
+            MinWidth = 0
+        };
+
+        var border = new Border
         {
             Padding = new Thickness(2),
             BorderBrush = Brush.Parse("#D0D0D0"),
             BorderThickness = new Thickness(0, 0, 1, 1),
             Background = Brushes.White,
             UseLayoutRounding = true,
-            Child = new TextBox
-            {
-                Text = text,
-                CornerRadius = new CornerRadius(0),
-                BorderThickness = new Thickness(0),
-                Margin = new Thickness(0),
-                Padding = new Thickness(4, 0, 4, 0),
-                Background = Brushes.White,
-                Foreground = Brushes.Black,
-                VerticalContentAlignment = VerticalAlignment.Center,
-                HorizontalContentAlignment = HorizontalAlignment.Left,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                FontSize = 14,
-                MinHeight = 0,
-                MinWidth = 0
-            }
+            Child = textBox
         };
+
+        return border;
     }
 
-    private void CellInput_OnLostFocus(object? sender, RoutedEventArgs e)
+    private async void CellInput_OnLostFocus(object? sender, RoutedEventArgs e)
     {
         if (DataContext is SpreadsheetEditorPageViewModel vm)
         {
-            if (sender is TextBox button && button.DataContext is Cell cell)
+            if (sender is TextBox cellInputTextBox && cellInputTextBox.Parent is Border cellInput)
             {
-                vm.CalculateCellFormulaCommand.Execute(cell).Subscribe();
+                if (!string.IsNullOrEmpty(cellInputTextBox.Text))
+                {
+                    var column = cellInput.GetValue(Grid.ColumnProperty);
+                    var row = cellInput.GetValue(Grid.RowProperty);
+                    var cellCoordinates = new CellCoordinates(column, row);
+                    await vm.AttachCellModelToCellViewModelCommand.Execute(cellCoordinates);
+
+                    await vm.CalculateCellFormulaCommand.Execute(cellCoordinates);
+                }
             }
         }
     }
 
-    private void CellInput_OnGotFocus(object? sender, GotFocusEventArgs e)
+    private async void CellInput_OnGotFocus(object? sender, GotFocusEventArgs e)
     {
         if (DataContext is SpreadsheetEditorPageViewModel vm)
         {
-            if (sender is TextBox button && button.DataContext is Cell cell)
+            if (sender is TextBox cellInputTextBox && cellInputTextBox.Parent is Border cellInput)
             {
-                vm.SelectedCell = cell;
+                var column = cellInput.GetValue(Grid.ColumnProperty);
+                var row = cellInput.GetValue(Grid.RowProperty);
+                var cellCoordinates = new CellCoordinates(column, row);
+                await vm.UpdateLastSelectedCellCommand.Execute(cellCoordinates);
             }
         }
     }
 
-    private void FormulaInput_OnLostFocus(object? sender, RoutedEventArgs e)
+    private async void FormulaInput_OnLostFocus(object? sender, RoutedEventArgs e)
     {
         if (DataContext is SpreadsheetEditorPageViewModel vm)
         {
-            vm.CalculateSelectedCellFormulaCommand.Execute().Subscribe();
+            if (sender is TextBox formulaInputTextBox)
+            {
+                if (!string.IsNullOrEmpty(formulaInputTextBox.Text))
+                {
+                    await vm.AttachCellModelToLastSelectedCellViewModelCommand.Execute();
+
+                    await vm.CalculateSelectedCellFormulaCommand.Execute();
+                }
+            }
         }
     }
 }
