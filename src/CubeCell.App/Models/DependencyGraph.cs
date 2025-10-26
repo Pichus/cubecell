@@ -23,4 +23,24 @@ public class DependencyGraph
 
         dependentsSet.Add(dependentAddress);
     }
+
+    public HashSet<string> GetCellDependencies(string cellAddress)
+    {
+        if (!_dependencies.TryGetValue(cellAddress, out HashSet<string>? dependencies))
+        {
+            return [];
+        }
+
+        return dependencies;
+    }
+
+    public HashSet<string> GetCellDependents(string cellAddress)
+    {
+        if (!_dependents.TryGetValue(cellAddress, out HashSet<string>? dependents))
+        {
+            return [];
+        }
+
+        return dependents;
+    }
 }

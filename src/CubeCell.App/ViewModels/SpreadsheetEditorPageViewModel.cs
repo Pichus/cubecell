@@ -1,6 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Reactive;
 
 using CubeCell.App.Models;
+using CubeCell.App.Utils;
+using CubeCell.Parser;
 
 using ReactiveUI;
 
@@ -8,6 +12,7 @@ namespace CubeCell.App.ViewModels;
 
 public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
 {
+    private readonly DependencyGraph _dependencyGraph = new();
     private readonly Spreadsheet _spreadsheet = new();
     private readonly SpreadsheetViewModel _spreadsheetViewModel = new();
 
@@ -72,7 +77,7 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         {
             return;
         }
-        
+
         AttachCellModelToCellViewModel(_lastSelectedCellCoordinates.Value, _lastSelectedCell);
     }
 
@@ -82,29 +87,78 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         {
             return;
         }
-        
+
         CalculateCellFormula(_lastSelectedCellCoordinates.Value, _lastSelectedCell);
     }
 
     private void CalculateCellFormula(CellCoordinates cellCoordinates, CellViewModel cellViewModel)
     {
         Cell? cellModel = _spreadsheet.GetCell(cellCoordinates.Col, cellCoordinates.Row);
-        
-        if (cellModel is null)
-        {
-            return;
-        }
-        
-        // TESTING
-        if (cellModel.Formula is null || !cellModel.Formula.StartsWith("="))
+
+        if (cellModel is null || cellModel.Formula is null)
         {
             return;
         }
 
-        cellModel.Value = "Calculated value";
-        // TESTING
+        if (cellModel.Formula.StartsWith("="))
+        {
+            var evaluator = new FormulaEvaluator(_spreadsheet);
+
+            try
+            {
+                var calculatedValue = evaluator.Evaluate(cellModel.Formula);
+                cellModel.Value = calculatedValue.ToString();
+            }
+            catch (Exception exception)
+            {
+                cellModel.Value = "error";
+            }
+        }
+
+
+        var dependencyExtractor = new DependencyExtractor();
+
+        var cellAddress = CellAddressUtils.CoordinatesToAddress(cellCoordinates);
+
+        try
+        {
+            HashSet<string> dependencies = dependencyExtractor.ExtractDependencies(cellModel.Formula);
+            RegisterDependencies(cellAddress, dependencies);
+        }
+        catch (Exception exception)
+        {
+            cellModel.Value = "error";
+        }
 
         cellViewModel.Refresh();
+
+        HashSet<string> dependants = _dependencyGraph.GetCellDependents(cellAddress);
+        RecalculateDependents(dependants);
+    }
+
+    private void RecalculateDependents(HashSet<string> dependants)
+    {
+        foreach (var dependant in dependants)
+        {
+            CellViewModel? cellViewModel = _spreadsheetViewModel.GetCell(dependant);
+
+            if (cellViewModel is null)
+            {
+                continue;
+            }
+
+            CellCoordinates cellCoordinates = CellAddressUtils.AddressToCoordinates(dependant);
+
+            CalculateCellFormula(cellCoordinates, cellViewModel);
+        }
+    }
+
+    private void RegisterDependencies(string dependentAddress, HashSet<string> dependencies)
+    {
+        foreach (var dependency in dependencies)
+        {
+            _dependencyGraph.AddDependency(dependentAddress, dependency);
+        }
     }
 
     private void UpdateLastSelectedCellCommandHandler(CellCoordinates cellCoordinates)
@@ -145,7 +199,7 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         cellViewModel.SetCellModel(cellModel);
         cellViewModel.Refresh();
     }
-    
+
 
     public CellViewModel GetCellViewModelForBinding(CellCoordinates cellCoordinates)
     {

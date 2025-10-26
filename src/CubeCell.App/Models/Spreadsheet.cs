@@ -9,7 +9,6 @@ namespace CubeCell.App.Models;
 public class Spreadsheet : IReadonlyCellStorage
 {
     private readonly Dictionary<CellCoordinates, Cell> _cells = new();
-    private readonly DependencyGraph _dependencyGraph = new();
 
     public string? GetCellValueByAddress(string address)
     {
