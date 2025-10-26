@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 
 using CubeCell.App.Models;
+using CubeCell.App.Utils;
 using CubeCell.Parser;
 
 using ReactiveUI;
@@ -24,8 +25,8 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         _rowCount = rowCount;
         ColCount = colCount;
 
-        _formulaEvaluator =
-            new FormulaEvaluator(cellAddress => Cells[GetListIndexFromCellAddress(cellAddress, _colCount)].Value);
+        // _formulaEvaluator =
+        //     new FormulaEvaluator(cellAddress => Cells[GetListIndexFromCellAddress(cellAddress, _colCount)].Value);
 
         CalculateCellFormulaCommand = ReactiveCommand.Create((Cell? cell = null) =>
         {
@@ -52,8 +53,6 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         InitializeColumnHeaders();
 
         InitializeRowHeaders();
-
-        InitializeCells();
     }
 
     public ObservableCollection<Cell> Cells { get; } = new();
@@ -98,16 +97,7 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
     {
         for (int c = 0; c < ColCount; c++)
         {
-            ColumnHeaders.Add(GetExcelColumnName(c));
-        }
-    }
-
-    private void InitializeCells()
-    {
-        for (int r = 0; r < RowCount; r++)
-        for (int c = 0; c < ColCount; c++)
-        {
-            Cells.Add(new Cell { Formula = string.Empty, Value = string.Empty, DisplayText = string.Empty });
+            ColumnHeaders.Add(CellAddressUtils.ColumnIndexToLetters(c));
         }
     }
 
@@ -136,66 +126,5 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
     private bool IsFormula(string value)
     {
         return value.StartsWith(FormulaPrefix);
-    }
-
-    private static string GetExcelColumnName(int index)
-    {
-        index++;
-        string columnName = string.Empty;
-
-        while (index > 0)
-        {
-            int remainder = (index - 1) % 26;
-            columnName = (char)('A' + remainder) + columnName;
-            index = (index - 1) / 26;
-        }
-
-        return columnName;
-    }
-
-    public static int GetListIndexFromCellAddress(string cellAddress, int columnCount)
-    {
-        if (string.IsNullOrWhiteSpace(cellAddress))
-        {
-            throw new ArgumentException("Cell address cannot be null or empty.", nameof(cellAddress));
-        }
-
-        // Normalize: remove $ and uppercase
-        cellAddress = cellAddress.Replace("$", "").ToUpperInvariant();
-
-        // Split letters and digits
-        int i = 0;
-        while (i < cellAddress.Length && char.IsLetter(cellAddress[i]))
-        {
-            i++;
-        }
-
-        if (i == 0 || i == cellAddress.Length)
-        {
-            throw new ArgumentException($"Invalid cell address '{cellAddress}'.", nameof(cellAddress));
-        }
-
-        string columnPart = cellAddress[..i];
-        string rowPart = cellAddress[i..];
-
-        // Convert column letters to 0-based index (A → 0, Z → 25, AA → 26, etc.)
-        int columnIndex = 0;
-        foreach (char c in columnPart)
-        {
-            columnIndex = (columnIndex * 26) + (c - 'A') + 1;
-        }
-
-        columnIndex--;
-
-        // Convert row digits to 0-based index
-        if (!int.TryParse(rowPart, out int rowIndex))
-        {
-            throw new ArgumentException($"Invalid row number in address '{cellAddress}'.", nameof(cellAddress));
-        }
-
-        rowIndex--;
-
-        // Linear index (row-major order)
-        return (rowIndex * columnCount) + columnIndex;
     }
 }

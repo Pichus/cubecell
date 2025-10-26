@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.ReactiveUI;
 
 using CubeCell.App.Models;
+using CubeCell.App.Utils;
 using CubeCell.App.ViewModels;
 
 using ReactiveUI;
@@ -37,13 +38,7 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
 
     private void InitializeGrid(int rowCount, int colCount)
     {
-        CellsGrid.RowDefinitions.Clear();
-        CellsGrid.ColumnDefinitions.Clear();
-        RowHeaderGrid.RowDefinitions.Clear();
-        ColumnHeaderGrid.ColumnDefinitions.Clear();
-        CellsGrid.Children.Clear();
-        RowHeaderGrid.Children.Clear();
-        ColumnHeaderGrid.Children.Clear();
+        ResetGrids();
 
         DefineGridStructure(rowCount, colCount);
 
@@ -54,13 +49,61 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
         FillCellsGrid(rowCount, colCount);
     }
 
+    private void ResetGrids()
+    {
+        CellsGrid.RowDefinitions.Clear();
+        CellsGrid.ColumnDefinitions.Clear();
+        RowHeaderGrid.RowDefinitions.Clear();
+        ColumnHeaderGrid.ColumnDefinitions.Clear();
+        CellsGrid.Children.Clear();
+        RowHeaderGrid.Children.Clear();
+        ColumnHeaderGrid.Children.Clear();
+    }
+
+    private void DefineGridStructure(int rowCount, int colCount)
+    {
+        for (var i = 0; i < rowCount; i++)
+        {
+            CellsGrid.RowDefinitions.Add(new RowDefinition(new GridLength(DefaultCellHeight)));
+            RowHeaderGrid.RowDefinitions.Add(new RowDefinition(new GridLength(DefaultCellHeight)));
+        }
+
+        for (var j = 0; j < colCount; j++)
+        {
+            CellsGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(DefaultCellWidth)));
+            ColumnHeaderGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(DefaultCellWidth)));
+        }
+    }
+
+    private void FillRowHeadersGrid(int rowCount)
+    {
+        for (var row = 0; row < rowCount; row++)
+        {
+            Border header = CreateRowHeaderElement((row + 1).ToString());
+
+            RowHeaderGrid.Children.Add(header);
+            Grid.SetRow(header, row);
+        }
+    }
+
+    private void FillColHeadersGrid(int colCount)
+    {
+        for (var col = 0; col < colCount; col++)
+        {
+            Border header = CreateColHeaderElement(CellAddressUtils.ColumnIndexToLetters(col));
+
+            ColumnHeaderGrid.Children.Add(header);
+            Grid.SetColumn(header, col);
+        }
+    }
+
     private void FillCellsGrid(int rowCount, int colCount)
     {
         for (var row = 0; row < rowCount; row++)
         {
             for (var col = 0; col < colCount; col++)
             {
-                Border cell = CreateCellElement(col, row, $"{(char)('A' + col)}{row + 1}");
+                Border cell = CreateCellElement(CellAddressUtils.CoordinatesToAddress(col, row));
 
                 Grid.SetRow(cell, row);
                 Grid.SetColumn(cell, col);
@@ -70,7 +113,45 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
         }
     }
 
-    private static Border CreateCellElement(int col, int row, string text)
+    private static Border CreateRowHeaderElement(string text)
+    {
+        return new Border
+        {
+            Background = Brush.Parse("#F3F3F3"),
+            BorderBrush = Brush.Parse("#D0D0D0"),
+            BorderThickness = new Thickness(0, 0, 1, 1),
+            Padding = new Thickness(2, 0, 2, 0),
+            Child = new TextBlock
+            {
+                Text = text,
+                FontWeight = FontWeight.SemiBold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = Brush.Parse("#333333")
+            }
+        };
+    }
+
+    private static Border CreateColHeaderElement(string text)
+    {
+        return new Border
+        {
+            Background = Brush.Parse("#F3F3F3"),
+            BorderBrush = Brush.Parse("#D0D0D0"),
+            BorderThickness = new Thickness(0, 0, 1, 1),
+            Padding = new Thickness(2, 1, 1, 1),
+            Child = new TextBlock
+            {
+                Text = text,
+                FontWeight = FontWeight.SemiBold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = Brush.Parse("#333333")
+            }
+        };
+    }
+
+    private static Border CreateCellElement(string text)
     {
         return new Border
         {
@@ -97,94 +178,6 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
                 MinWidth = 0
             }
         };
-    }
-
-    private void DefineGridStructure(int rowCount, int colCount)
-    {
-        for (var i = 0; i < rowCount; i++)
-        {
-            CellsGrid.RowDefinitions.Add(new RowDefinition(new GridLength(DefaultCellHeight)));
-            RowHeaderGrid.RowDefinitions.Add(new RowDefinition(new GridLength(DefaultCellHeight)));
-        }
-
-        for (var j = 0; j < colCount; j++)
-        {
-            CellsGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(DefaultCellWidth)));
-            ColumnHeaderGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(DefaultCellWidth)));
-        }
-    }
-
-
-    private void FillRowHeadersGrid(int rowCount)
-    {
-        for (var row = 0; row < rowCount; row++)
-        {
-            Border header = CreateRowHeaderElement(row, (row + 1).ToString());
-
-            RowHeaderGrid.Children.Add(header);
-            Grid.SetRow(header, row);
-        }
-    }
-
-    private static Border CreateRowHeaderElement(int row, string text)
-    {
-        return new Border
-        {
-            Background = Brush.Parse("#F3F3F3"),
-            BorderBrush = Brush.Parse("#D0D0D0"),
-            BorderThickness = new Thickness(0, 0, 1, 1),
-            Padding = new Thickness(2, 0, 2, 0),
-            Child = new TextBlock
-            {
-                Text = text,
-                FontWeight = FontWeight.SemiBold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                Foreground = Brush.Parse("#333333")
-            }
-        };
-    }
-
-    private void FillColHeadersGrid(int colCount)
-    {
-        for (var col = 0; col < colCount; col++)
-        {
-            Border header = CreateColHeaderElement(col);
-
-            ColumnHeaderGrid.Children.Add(header);
-            Grid.SetColumn(header, col);
-        }
-    }
-
-    private static Border CreateColHeaderElement(int col)
-    {
-        return new Border
-        {
-            Background = Brush.Parse("#F3F3F3"),
-            BorderBrush = Brush.Parse("#D0D0D0"),
-            BorderThickness = new Thickness(0, 0, 1, 1),
-            Padding = new Thickness(2, 1, 1, 1),
-            Child = new TextBlock
-            {
-                Text = GetColumnName(col),
-                FontWeight = FontWeight.SemiBold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                Foreground = Brush.Parse("#333333")
-            }
-        };
-    }
-
-    private static string GetColumnName(int index)
-    {
-        var name = "";
-        while (index >= 0)
-        {
-            name = (char)('A' + (index % 26)) + name;
-            index = (index / 26) - 1;
-        }
-
-        return name;
     }
 
     private void CellInput_OnLostFocus(object? sender, RoutedEventArgs e)
