@@ -4,16 +4,19 @@ namespace CubeCell.Parser;
 
 public class FormulaEvaluator
 {
-    private readonly Func<string, object?> _getCellValue;
+    private readonly IReadonlyCellStorage _cellStorage;
 
-    public FormulaEvaluator(Func<string, object?> getCellValue)
+    public FormulaEvaluator(IReadonlyCellStorage cellStorage)
     {
-        _getCellValue = getCellValue;
+        _cellStorage = cellStorage;
     }
 
     public object Evaluate(string formula)
     {
-        if (formula.StartsWith("=")) formula = formula.Substring(1);
+        if (formula.StartsWith("="))
+        {
+            formula = formula.Substring(1);
+        }
 
         var inputStream = new AntlrInputStream(formula);
 
@@ -23,9 +26,9 @@ public class FormulaEvaluator
 
         var parser = new CubeCellParser(tokenStream);
 
-        var context = parser.expression();
+        CubeCellParser.ExpressionContext? context = parser.expression();
 
-        var visitor = new FormulaVisitor(_getCellValue);
+        var visitor = new FormulaVisitor(_cellStorage);
         return visitor.Visit(context);
     }
 }

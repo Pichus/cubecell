@@ -1,47 +1,44 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
+using System.Numerics;
+
 using Antlr4.Runtime.Misc;
+
+namespace CubeCell.Parser;
 
 public class FormulaVisitor : CubeCellBaseVisitor<object>
 {
-    private readonly Func<string, object?> _getCellValue;
+    private readonly IReadonlyCellStorage _cellStorage;
 
-    public FormulaVisitor(Func<string, object?>? getCellValue = null)
+    public FormulaVisitor(IReadonlyCellStorage cellStorage)
     {
-        _getCellValue = getCellValue ?? (_ => 0);
+        _cellStorage = cellStorage;
     }
 
     public object Evaluate(CubeCellParser.FormulaContext ctx)
-        => Visit(ctx);
+    {
+        return Visit(ctx);
+    }
 
     // ---------------- Literals ----------------
 
-    public override object VisitNumberExpr(CubeCellParser.NumberExprContext ctx)
+    public override object VisitNumberExpr([NotNull] CubeCellParser.NumberExprContext context)
     {
-        var text = ctx.number().GetText();
-        return double.Parse(text, CultureInfo.InvariantCulture);
+        var text = context.NUMBER().GetText();
+        return BigInteger.Parse(text);
     }
 
-    public override object VisitStringExpr(CubeCellParser.StringExprContext ctx)
+    public override object VisitCellRefExpr([NotNull] CubeCellParser.CellRefExprContext context)
     {
-        var str = ctx.@string().GetText();
-        return str.Substring(1, str.Length - 2);
-    }
-
-    public override object VisitCellRefExpr(CubeCellParser.CellRefExprContext ctx)
-    {
-        var name = ctx.cellReference().GetText();
-        return _getCellValue(name) ?? 0;
+        var name = context.CELL_REF().GetText().ToUpperInvariant();
+        return _cellStorage.GetCellValueByAddress(name) ?? "";
     }
 
     // ---------------- Arithmetic ----------------
 
-    public override object VisitAddSubExpr(CubeCellParser.AddSubExprContext ctx)
+    public override object VisitAddSubExpr([NotNull] CubeCellParser.AddSubExprContext context)
     {
-        var left = ToNumber(Visit(ctx.expression(0)));
-        var right = ToNumber(Visit(ctx.expression(1)));
-        var op = ctx.GetChild(1).GetText();
+        BigInteger left = ToNumber(Visit(context.expression(0)));
+        BigInteger right = ToNumber(Visit(context.expression(1)));
+        var op = context.GetChild(1).GetText();
 
         return op switch
         {
@@ -51,123 +48,180 @@ public class FormulaVisitor : CubeCellBaseVisitor<object>
         };
     }
 
-    public override object VisitMulDivExpr(CubeCellParser.MulDivExprContext ctx)
+    public override object VisitMulDivModExpr([NotNull] CubeCellParser.MulDivModExprContext context)
     {
-        var left = ToNumber(Visit(ctx.expression(0)));
-        var right = ToNumber(Visit(ctx.expression(1)));
-        var op = ctx.GetChild(1).GetText();
+        BigInteger left = ToNumber(Visit(context.expression(0)));
+        BigInteger right = ToNumber(Visit(context.expression(1)));
+        var op = context.GetChild(1).GetText().ToLowerInvariant();
 
         return op switch
         {
             "*" => left * right,
-            "/" => left / right,
+            "/" => right == 0 ? throw new DivideByZeroException() : left / right,
+            "div" => right == 0 ? throw new DivideByZeroException() : left / right,
+            "mod" => right == 0 ? throw new DivideByZeroException() : left % BigInteger.Abs(right),
             _ => throw new Exception($"Unknown operator {op}")
         };
     }
 
-    public override object VisitPowerExpr(CubeCellParser.PowerExprContext ctx)
+    public override object VisitPowerExpr([NotNull] CubeCellParser.PowerExprContext context)
     {
-        var left = ToNumber(Visit(ctx.expression(0)));
-        var right = ToNumber(Visit(ctx.expression(1)));
-        return Math.Pow(left, right);
+        BigInteger baseValue = ToNumber(Visit(context.expression(0)));
+        BigInteger exponent = ToNumber(Visit(context.expression(1)));
+
+        if (exponent < 0)
+        {
+            throw new ArithmeticException("Negative exponents not supported for integers");
+        }
+
+        if (exponent > int.MaxValue)
+        {
+            throw new ArithmeticException("Exponent too large");
+        }
+
+        return BigInteger.Pow(baseValue, (int)exponent);
+    }
+
+    // ---------------- Unary ----------------
+
+    public override object VisitUnaryPlusMinusExpr([NotNull] CubeCellParser.UnaryPlusMinusExprContext context)
+    {
+        BigInteger value = ToNumber(Visit(context.expression()));
+        var op = context.GetChild(0).GetText();
+
+        return op == "-" ? -value : value;
+    }
+
+    public override object VisitIncExpr([NotNull] CubeCellParser.IncExprContext context)
+    {
+        BigInteger value = ToNumber(Visit(context.expression()));
+        return value + 1;
+    }
+
+    public override object VisitDecExpr([NotNull] CubeCellParser.DecExprContext context)
+    {
+        BigInteger value = ToNumber(Visit(context.expression()));
+        return value - 1;
+    }
+
+    public override object VisitNotExpr([NotNull] CubeCellParser.NotExprContext context)
+    {
+        var value = Visit(context.expression());
+        return !ToBool(value);
     }
 
     // ---------------- Comparisons ----------------
 
-    public override object VisitComparisonExpr(CubeCellParser.ComparisonExprContext ctx)
+    public override object VisitComparisonExpr([NotNull] CubeCellParser.ComparisonExprContext context)
     {
-        var left = Visit(ctx.expression(0));
-        var right = Visit(ctx.expression(1));
-        var op = ctx.GetChild(1).GetText();
+        BigInteger left = ToNumber(Visit(context.expression(0)));
+        BigInteger right = ToNumber(Visit(context.expression(1)));
+        var op = context.GetChild(1).GetText();
 
-        double ln = ToNumber(left);
-        double rn = ToNumber(right);
-
-        return op switch
+        var result = op switch
         {
-            "=" => ln == rn,
-            "<" => ln < rn,
-            ">" => ln > rn,
+            "=" => left == right,
+            "<>" => left != right,
+            "<" => left < right,
+            ">" => left > right,
+            "<=" => left <= right,
+            ">=" => left >= right,
             _ => throw new Exception($"Unknown comparison operator {op}")
         };
-    }
 
-    public override object VisitComparisonExpr2(CubeCellParser.ComparisonExpr2Context ctx)
-    {
-        var left = Visit(ctx.expression(0));
-        var right = Visit(ctx.expression(1));
-        var op = ctx.GetChild(1).GetText();
-
-        double ln = ToNumber(left);
-        double rn = ToNumber(right);
-
-        return op switch
-        {
-            "<=" => ln <= rn,
-            ">=" => ln >= rn,
-            "<>" => ln != rn,
-            _ => throw new Exception($"Unknown comparison operator {op}")
-        };
+        return result;
     }
 
     // ---------------- Logical ----------------
 
-    public override object VisitNotExpr(CubeCellParser.NotExprContext ctx)
+    public override object VisitAndExpr([NotNull] CubeCellParser.AndExprContext context)
     {
-        var val = Visit(ctx.expression());
-        return !ToBool(val);
+        var left = Visit(context.expression(0));
+        var right = Visit(context.expression(1));
+        return ToBool(left) && ToBool(right);
     }
 
-    public override object VisitLogicalExpr(CubeCellParser.LogicalExprContext ctx)
+    public override object VisitOrExpr([NotNull] CubeCellParser.OrExprContext context)
     {
-        var left = Visit(ctx.expression(0));
-        var right = Visit(ctx.expression(1));
-        var op = ctx.GetChild(1).GetText().ToUpperInvariant();
+        var left = Visit(context.expression(0));
+        var right = Visit(context.expression(1));
+        return ToBool(left) || ToBool(right);
+    }
 
-        return op switch
-        {
-            "AND" => ToBool(left) && ToBool(right),
-            "OR"  => ToBool(left) || ToBool(right),
-            _ => throw new Exception($"Unknown logical operator {op}")
-        };
+    public override object VisitEqvExpr([NotNull] CubeCellParser.EqvExprContext context)
+    {
+        var left = Visit(context.expression(0));
+        var right = Visit(context.expression(1));
+        var leftBool = ToBool(left);
+        var rightBool = ToBool(right);
+        return leftBool == rightBool;
     }
 
     // ---------------- Functions ----------------
 
-    public override object VisitFunctionExpr(CubeCellParser.FunctionExprContext ctx)
+    public override object VisitMaxExpr([NotNull] CubeCellParser.MaxExprContext context)
     {
-        string name = ctx.functionCall().IDENTIFIER().GetText().ToUpperInvariant();
-        var args = new List<double>();
+        BigInteger left = ToNumber(Visit(context.expression(0)));
+        BigInteger right = ToNumber(Visit(context.expression(1)));
+        return BigInteger.Max(left, right);
+    }
 
-        foreach (var e in ctx.functionCall().expression())
-            args.Add(ToNumber(Visit(e)));
+    public override object VisitMinExpr([NotNull] CubeCellParser.MinExprContext context)
+    {
+        BigInteger left = ToNumber(Visit(context.expression(0)));
+        BigInteger right = ToNumber(Visit(context.expression(1)));
+        return BigInteger.Min(left, right);
+    }
 
-        return name switch
+    public override object VisitMmaxExpr([NotNull] CubeCellParser.MmaxExprContext context)
+    {
+        BigInteger? max = null;
+        foreach (CubeCellParser.ExpressionContext? expr in context.expressionList().expression())
         {
-            "MAX"  => args.Count == 0 ? 0 : args.Max(),
-            "MIN"  => args.Count == 0 ? 0 : args.Min(),
-            "MMAX" => args.Count == 0 ? 0 : args.Max(),
-            "MMIN" => args.Count == 0 ? 0 : args.Min(),
-            _ => throw new Exception($"Unknown function {name}")
-        };
+            BigInteger value = ToNumber(Visit(expr));
+            if (max == null || value > max)
+            {
+                max = value;
+            }
+        }
+
+        return max ?? BigInteger.Zero;
+    }
+
+    public override object VisitMminExpr([NotNull] CubeCellParser.MminExprContext context)
+    {
+        BigInteger? min = null;
+        foreach (CubeCellParser.ExpressionContext? expr in context.expressionList().expression())
+        {
+            BigInteger value = ToNumber(Visit(expr));
+            if (min == null || value < min)
+            {
+                min = value;
+            }
+        }
+
+        return min ?? BigInteger.Zero;
     }
 
     // ---------------- Parentheses ----------------
 
-    public override object VisitParenExpr(CubeCellParser.ParenExprContext ctx)
-        => Visit(ctx.expression());
+    public override object VisitParenExpr([NotNull] CubeCellParser.ParenExprContext context)
+    {
+        return Visit(context.expression());
+    }
 
     // ---------------- Helpers ----------------
 
-    private static double ToNumber(object value)
+    private static BigInteger ToNumber(object value)
     {
         return value switch
         {
-            double d => d,
-            int i => i,
-            bool b => b ? 1 : 0,
-            string s when double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var n) => n,
-            _ => 0
+            BigInteger b => b,
+            int i => new BigInteger(i),
+            long l => new BigInteger(l),
+            bool b => b ? BigInteger.One : BigInteger.Zero,
+            string s when BigInteger.TryParse(s, out BigInteger n) => n,
+            _ => BigInteger.Zero
         };
     }
 
@@ -176,8 +230,9 @@ public class FormulaVisitor : CubeCellBaseVisitor<object>
         return value switch
         {
             bool b => b,
-            double d => d != 0,
+            BigInteger bi => bi != BigInteger.Zero,
             int i => i != 0,
+            long l => l != 0,
             string s => !string.IsNullOrEmpty(s),
             _ => false
         };

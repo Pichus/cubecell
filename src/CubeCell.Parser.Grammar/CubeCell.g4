@@ -1,59 +1,49 @@
 grammar CubeCell;
 
 // Parser Rules
+
 formula
-    : '=' expression EOF
+    : expression EOF
     ;
 
 expression
-    : expression '^' expression                           # PowerExpr
-    | expression ('*' | '/') expression                   # MulDivExpr
-    | expression ('+' | '-') expression                   # AddSubExpr
-    | expression ('=' | '<' | '>') expression            # ComparisonExpr
-    | expression ('<=' | '>=' | '<>') expression         # ComparisonExpr2
-    | 'NOT' expression                                    # NotExpr
-    | expression ('OR' | 'AND') expression               # LogicalExpr
-    | functionCall                                        # FunctionExpr
-    | cellReference                                       # CellRefExpr
-    | number                                              # NumberExpr
-    | string                                              # StringExpr
-    | '(' expression ')'                                  # ParenExpr
+    : '(' expression ')'                                               # ParenExpr
+    | CELL_REF                                                         # CellRefExpr
+    | NUMBER                                                           # NumberExpr
+    | 'max' '(' expression ',' expression ')'                          # MaxExpr
+    | 'min' '(' expression ',' expression ')'                          # MinExpr
+    | 'mmax' '(' expressionList ')'                                    # MmaxExpr
+    | 'mmin' '(' expressionList ')'                                    # MminExpr
+    | ('+' | '-') expression                                           # UnaryPlusMinusExpr
+    | 'not' expression                                                 # NotExpr
+    | 'inc' expression                                                 # IncExpr
+    | 'dec' expression                                                 # DecExpr
+    | <assoc=right> expression '^' expression                          # PowerExpr
+    | expression ('*' | '/' | 'div' | 'mod') expression                # MulDivModExpr
+    | expression ('+' | '-') expression                                # AddSubExpr
+    | expression ('=' | '<>' | '<' | '>' | '<=' | '>=') expression     # ComparisonExpr
+    | expression 'and' expression                                      # AndExpr
+    | expression 'or' expression                                       # OrExpr
+    | expression 'eqv' expression                                      # EqvExpr
     ;
 
-functionCall
-    : IDENTIFIER '(' (expression (',' expression)*)? ')'
+expressionList
+    : expression (',' expression)*
     ;
 
-cellReference
-    : CELL_REF                                            # SimpleCell
-    | CELL_REF ':' CELL_REF                              # RangeCell
-    ;
+// Lexer Rules
 
-number
-    : NUMBER
-    ;
-
-string
-    : STRING
-    ;
-
-// Lexer Rules (ORDER MATTERS!)
+// Cell reference: letters followed by digits (e.g., A3, AB123)
 CELL_REF
-    : '$'? [A-Z]+ '$'? [0-9]+
+    : [A-Za-z]+ [0-9]+
     ;
 
+// Integer numbers of arbitrary length
 NUMBER
-    : '-'? [0-9]+ ('.' [0-9]+)?
+    : [0-9]+
     ;
 
-STRING
-    : '"' (~["\r\n])* '"'
-    ;
-
-IDENTIFIER
-    : [A-Z][A-Z0-9_]*
-    ;
-
+// Whitespace
 WS
     : [ \t\r\n]+ -> skip
     ;
