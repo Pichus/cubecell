@@ -1,6 +1,8 @@
 using System;
+
 using CubeCell.App.ViewModels;
 using CubeCell.App.Views;
+
 using ReactiveUI;
 
 namespace CubeCell.App;
