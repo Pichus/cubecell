@@ -3,7 +3,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:CubeCell.App.ViewModels"
-             x:DataType="vm:SpreadsheetEditorPageViewModel"
+             xmlns:pages="clr-namespace:CubeCell.App.ViewModels.Pages"
+             x:DataType="pages:SpreadsheetEditorPageViewModel"
              mc:Ignorable="d"
              x:Class="CubeCell.App.Views.SpreadsheetEditorPage">
 

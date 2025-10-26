@@ -1,7 +1,10 @@
 using System.Reactive;
+
+using CubeCell.App.ViewModels.Abstractions;
+
 using ReactiveUI;
 
-namespace CubeCell.App.ViewModels;
+namespace CubeCell.App.ViewModels.Pages;
 
 public class AboutPageViewModel : ViewModelBase, IRoutableViewModel
 {

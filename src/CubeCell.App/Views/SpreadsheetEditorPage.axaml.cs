@@ -13,6 +13,7 @@ using Avalonia.ReactiveUI;
 using CubeCell.App.Models;
 using CubeCell.App.Utils;
 using CubeCell.App.ViewModels;
+using CubeCell.App.ViewModels.Pages;
 
 using ReactiveUI;
 

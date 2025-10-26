@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using CubeCell.App.ViewModels;
+using CubeCell.App.ViewModels.Abstractions;
 
 namespace CubeCell.App;
 

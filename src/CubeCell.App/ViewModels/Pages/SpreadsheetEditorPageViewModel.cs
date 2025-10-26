@@ -4,11 +4,12 @@ using System.Reactive;
 
 using CubeCell.App.Models;
 using CubeCell.App.Utils;
+using CubeCell.App.ViewModels.Abstractions;
 using CubeCell.Parser;
 
 using ReactiveUI;
 
-namespace CubeCell.App.ViewModels;
+namespace CubeCell.App.ViewModels.Pages;
 
 public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
 {

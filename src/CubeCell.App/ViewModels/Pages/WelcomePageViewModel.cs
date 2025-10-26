@@ -2,9 +2,11 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Windows.Input;
 
+using CubeCell.App.ViewModels.Abstractions;
+
 using ReactiveUI;
 
-namespace CubeCell.App.ViewModels;
+namespace CubeCell.App.ViewModels.Pages;
 
 public class WelcomePageViewModel : ViewModelBase, IRoutableViewModel
 {
