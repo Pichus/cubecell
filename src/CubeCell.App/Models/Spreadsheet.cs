@@ -6,14 +6,9 @@ using CubeCell.Parser;
 
 namespace CubeCell.App.Models;
 
-public class Spreadsheet : ICellValueProvider, IReadOnlyCellStorage
+public class Spreadsheet : ICellStorage, ICellValueProvider
 {
     private readonly Dictionary<CellCoordinates, Cell> _cells = new();
-
-    public string? GetCellValueByAddress(string address)
-    {
-        return GetCell(address)?.Value;
-    }
 
     public Cell? GetCell(int col, int row)
     {
@@ -36,5 +31,10 @@ public class Spreadsheet : ICellValueProvider, IReadOnlyCellStorage
     public void SetCell(CellCoordinates coordinates, Cell cell)
     {
         _cells[coordinates] = cell;
+    }
+
+    public string? GetCellValueByAddress(string address)
+    {
+        return GetCell(address)?.Value;
     }
 }

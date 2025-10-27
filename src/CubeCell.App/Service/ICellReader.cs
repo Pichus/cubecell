@@ -4,7 +4,7 @@ using CubeCell.App.Models;
 
 namespace CubeCell.App.Service;
 
-public interface IReadOnlyCellStorage
+public interface ICellReader
 {
     public Cell? GetCell(int col, int row);
 
