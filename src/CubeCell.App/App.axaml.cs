@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
-using CubeCell.App.ViewModels;
+using CubeCell.App.ViewModels.Windows;
 using CubeCell.App.Views;
 
 namespace CubeCell.App;

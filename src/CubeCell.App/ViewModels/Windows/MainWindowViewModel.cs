@@ -3,7 +3,7 @@ using CubeCell.App.ViewModels.Pages;
 
 using ReactiveUI;
 
-namespace CubeCell.App.ViewModels;
+namespace CubeCell.App.ViewModels.Windows;
 
 public class MainWindowViewModel : ViewModelBase, IScreen
 {
