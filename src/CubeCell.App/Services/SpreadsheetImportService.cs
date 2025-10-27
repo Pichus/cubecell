@@ -4,7 +4,7 @@ using ClosedXML.Excel;
 
 using CubeCell.App.Models;
 
-namespace CubeCell.App.Service;
+namespace CubeCell.App.Services;
 
 public class SpreadsheetImportService : ISpreadsheetImportService
 {

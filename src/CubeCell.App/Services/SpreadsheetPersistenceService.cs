@@ -1,6 +1,6 @@
 using ClosedXML.Excel;
 
-namespace CubeCell.App.Service;
+namespace CubeCell.App.Services;
 
 public class SpreadsheetPersistenceService : ISpreadsheetPersistenceService
 {

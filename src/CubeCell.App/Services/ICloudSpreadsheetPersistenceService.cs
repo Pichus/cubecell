@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 using Google.Apis.Drive.v3.Data;
 
-namespace CubeCell.App.Service;
+namespace CubeCell.App.Services;
 
 public interface ICloudSpreadsheetPersistenceService
 {

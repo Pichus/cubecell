@@ -15,7 +15,7 @@ using Microsoft.Extensions.Configuration;
 
 using File = Google.Apis.Drive.v3.Data.File;
 
-namespace CubeCell.App.Service;
+namespace CubeCell.App.Services;
 
 public class GoogleDriveSpreadsheetPersistenceService : ICloudSpreadsheetPersistenceService
 {

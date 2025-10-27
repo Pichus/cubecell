@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-using CubeCell.App.Service;
+using CubeCell.App.Services;
 using CubeCell.App.Utils;
 using CubeCell.Parser;
 

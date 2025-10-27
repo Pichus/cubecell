@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reactive;
 
 using CubeCell.App.Models;
-using CubeCell.App.Service;
+using CubeCell.App.Services;
 using CubeCell.App.Utils;
 using CubeCell.App.ViewModels.Abstractions;
 using CubeCell.Parser;

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 using CubeCell.App.Models;
 
-namespace CubeCell.App.Service;
+namespace CubeCell.App.Services;
 
 public interface ICellReader
 {

@@ -5,7 +5,7 @@ using System.Reactive;
 using System.Threading.Tasks;
 
 using CubeCell.App.Models;
-using CubeCell.App.Service;
+using CubeCell.App.Services;
 using CubeCell.App.ViewModels.Abstractions;
 
 using ReactiveUI;
