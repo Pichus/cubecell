@@ -4,43 +4,117 @@ namespace CubeCell.App.Models;
 
 public class DependencyGraph
 {
+    private readonly Dictionary<string, HashSet<string>> _dependants = new();
     private readonly Dictionary<string, HashSet<string>> _dependencies = new();
-    private readonly Dictionary<string, HashSet<string>> _dependents = new();
 
-    public void AddDependency(string dependentAddress, string dependencyAddress)
+    public bool TryAddDependency(string dependantAddress, string dependencyAddress)
     {
-        if (!_dependencies.TryGetValue(dependentAddress, out HashSet<string>? dependenciesSet))
+        if (dependantAddress == dependencyAddress)
         {
-            dependenciesSet = _dependencies[dependentAddress] = new HashSet<string>();
+            return false;
         }
 
-        dependenciesSet.Add(dependencyAddress);
+        _dependencies.TryAdd(dependantAddress, new HashSet<string>());
+        _dependencies[dependantAddress].Add(dependencyAddress);
 
-        if (!_dependents.TryGetValue(dependencyAddress, out HashSet<string>? dependentsSet))
+        _dependants.TryAdd(dependencyAddress, new HashSet<string>());
+        _dependants[dependencyAddress].Add(dependantAddress);
+
+        if (HasCycle(dependantAddress))
         {
-            dependentsSet = _dependents[dependencyAddress] = new HashSet<string>();
+            RemoveDependency(dependantAddress, dependencyAddress);
+            return false;
         }
 
-        dependentsSet.Add(dependentAddress);
+        return true;
+    }
+
+    public void ClearDependencies(string dependantAddress)
+    {
+        HashSet<string> dependencies = GetCellDependencies(dependantAddress);
+
+        if (dependencies.Count == 0)
+        {
+            return;
+        }
+
+        foreach (string dependency in dependencies)
+        {
+            RemoveDependency(dependantAddress, dependency);
+        }
+    }
+
+    public void RemoveDependency(string dependantAddress, string dependencyAddress)
+    {
+        GetCellDependencies(dependantAddress).Remove(dependencyAddress);
+        GetCellDependants(dependencyAddress).Remove(dependantAddress);
+    }
+
+    public bool TrySetDependencies(string dependantAddress, HashSet<string> dependencies)
+    {
+        _dependencies[dependantAddress] = dependencies;
+
+        foreach (string dependency in dependencies)
+        {
+            _dependants.TryAdd(dependency, new HashSet<string>());
+            _dependants[dependency].Add(dependantAddress);
+        }
+
+        if (HasCycle(dependantAddress))
+        {
+            _dependencies.Remove(dependantAddress);
+            foreach (string dep in dependencies)
+            {
+                _dependants[dep].Remove(dependantAddress);
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     public HashSet<string> GetCellDependencies(string cellAddress)
     {
-        if (!_dependencies.TryGetValue(cellAddress, out HashSet<string>? dependencies))
-        {
-            return [];
-        }
-
-        return dependencies;
+        return _dependencies.GetValueOrDefault(cellAddress) ?? [];
     }
 
-    public HashSet<string> GetCellDependents(string cellAddress)
+    public HashSet<string> GetCellDependants(string cellAddress)
     {
-        if (!_dependents.TryGetValue(cellAddress, out HashSet<string>? dependents))
+        return _dependants.GetValueOrDefault(cellAddress) ?? [];
+    }
+
+    private bool HasCycle(string start)
+    {
+        HashSet<string> visited = new();
+        HashSet<string> recursionStack = new();
+
+        bool Dfs(string node)
         {
-            return [];
+            if (!visited.Add(node))
+            {
+                return false;
+            }
+
+            recursionStack.Add(node);
+
+            foreach (string dep in _dependencies.GetValueOrDefault(node) ?? [])
+            {
+                if (recursionStack.Contains(dep))
+                {
+                    return true;
+                }
+
+                if (Dfs(dep))
+                {
+                    return true;
+                }
+            }
+
+            recursionStack.Remove(node);
+            return false;
         }
 
-        return dependents;
+        return Dfs(start);
     }
 }
