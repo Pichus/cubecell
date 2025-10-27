@@ -2,13 +2,78 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="clr-namespace:CubeCell.App.ViewModels"
              xmlns:pages="clr-namespace:CubeCell.App.ViewModels.Pages"
              x:DataType="pages:AboutPageViewModel"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="CubeCell.App.Views.AboutPage">
-    <StackPanel>
-        <TextBlock>About</TextBlock>
-        <Button Command="{Binding GoBackCommand}" Content="Go back" />
-    </StackPanel>
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:Class="CubeCell.App.Views.AboutPage"
+             Background="#FAFAFA">
+
+    <Border Margin="40"
+            Padding="40"
+            CornerRadius="12"
+            Background="White"
+            BoxShadow="0 4 10 #00000020">
+        <StackPanel Spacing="24">
+
+            <!-- Header -->
+            <StackPanel Spacing="4">
+                <Button Command="{Binding GoBackCommand}">Go back</Button>
+                <TextBlock Text="About CubeCell"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="#107C41" />
+                <TextBlock Text="Version 1.0.0"
+                           FontSize="14"
+                           Foreground="#777" />
+            </StackPanel>
+
+            <Separator />
+
+            <!-- Main description -->
+            <TextBlock TextWrapping="Wrap"
+                       FontSize="15"
+                       Foreground="#333"
+                       Text="">
+                CubeCell is a lightweight spreadsheet editor built for speed, clarity, and simplicity.
+                It lets you create, calculate, and organize your data in an intuitive grid environment
+                that feels familiar yet refreshingly minimal. Designed with students and developers in mind,
+                CubeCell aims to bridge powerful formula logic with an elegant user experience.
+            </TextBlock>
+
+            <!-- Features section -->
+            <StackPanel>
+                <TextBlock Text="Highlights"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="#107C41"
+                           Margin="0,16,0,8" />
+                <StackPanel Spacing="6">
+                    <TextBlock Text="• Reactive formula updates with dependency tracking." />
+                    <TextBlock Text="• Google Drive integration for cloud access." />
+                    <TextBlock Text="• Clean, Excel-inspired interface built with Avalonia UI." />
+                    <TextBlock Text="• Open-source and cross-platform — runs on Windows, Linux, and macOS." />
+                </StackPanel>
+            </StackPanel>
+
+            <Separator Margin="0,8,0,8" />
+
+            <!-- Credits / footer -->
+            <StackPanel Spacing="4">
+                <TextBlock Text="Created by Saddy Yukino"
+                           FontSize="14"
+                           FontWeight="Medium" />
+                <TextBlock Text="© 2025 CubeCell Project — All rights reserved."
+                           FontSize="13"
+                           Foreground="#666" />
+                <TextBlock Text="Visit us on GitHub: github.com/saddy-yukino/cubecell"
+                           FontSize="13"
+                           Foreground="#107C41"
+                           Cursor="Hand" />
+            </StackPanel>
+
+        </StackPanel>
+    </Border>
+
 </UserControl>
