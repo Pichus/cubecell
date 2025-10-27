@@ -9,11 +9,13 @@ public class DependencyExtractor : CubeCellBaseVisitor<object>
 
     public HashSet<string> ExtractDependencies(string formula)
     {
-        if (formula.StartsWith("="))
+        if (!formula.StartsWith("="))
         {
-            formula = formula.Substring(1);
+            return [];
         }
 
+        formula = formula.Substring(1);
+        
         var inputStream = new AntlrInputStream(formula);
 
         var lexer = new CubeCellLexer(inputStream);
