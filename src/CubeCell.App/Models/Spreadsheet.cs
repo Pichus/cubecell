@@ -23,7 +23,7 @@ public class Spreadsheet : ICellStorage, ICellValueProvider
         return GetCell(col, row);
     }
 
-    public IReadOnlyDictionary<CellCoordinates, Cell> GetCells()
+    public IEnumerable<KeyValuePair<CellCoordinates, Cell>> GetCells()
     {
         return _cells.AsReadOnly();
     }

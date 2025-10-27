@@ -10,5 +10,5 @@ public interface ICellReader
 
     public Cell? GetCell(string address);
 
-    public IReadOnlyDictionary<CellCoordinates, Cell> GetCells();
+    public IEnumerable<KeyValuePair<CellCoordinates, Cell>> GetCells();
 }
