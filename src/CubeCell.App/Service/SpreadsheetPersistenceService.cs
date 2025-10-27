@@ -8,18 +8,18 @@ namespace CubeCell.App.Service;
 
 public class SpreadsheetPersistenceService : ISpreadsheetPersistenceService
 {
-    private readonly IReadOnlyCellStorage _cellStorage;
+    private readonly ICellReader _cellReader;
 
-    public SpreadsheetPersistenceService(IReadOnlyCellStorage cellStorage)
+    public SpreadsheetPersistenceService(ICellReader cellReader)
     {
-        _cellStorage = cellStorage;
+        _cellReader = cellReader;
     }
 
     public void CreateSpreadsheetAndSave(string filePath, string fileName)
     {
         using var workbook = new XLWorkbook();
         IXLWorksheet? worksheet = workbook.AddWorksheet("Sheet1");
-        
+
         AddCellsFromCellStorageToWorksheet(worksheet);
 
         workbook.SaveAs(filePath);
@@ -46,8 +46,8 @@ public class SpreadsheetPersistenceService : ISpreadsheetPersistenceService
 
     private void AddCellsFromCellStorageToWorksheet(IXLWorksheet worksheet)
     {
-        IReadOnlyDictionary<CellCoordinates, Cell> cells = _cellStorage.GetCells();
-        
+        IReadOnlyDictionary<CellCoordinates, Cell> cells = _cellReader.GetCells();
+
         foreach ((CellCoordinates key, Cell value) in cells)
         {
             if (!string.IsNullOrEmpty(value.Formula) && value.Formula.StartsWith("="))
