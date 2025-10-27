@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "src\CubeCell.Parser.Grammar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "src\CubeCell.Parser", "src\CubeCell.Parser\CubeCell.Parser.csproj", "{DB652824-EC3C-4DC9-B235-D0FB6BBFE666}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CubeCell.UnitTests", "tests\CubeCell.UnitTests\CubeCell.UnitTests.csproj", "{718A5707-6CAB-485C-AD6F-FFECD180ED38}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{DB652824-EC3C-4DC9-B235-D0FB6BBFE666}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB652824-EC3C-4DC9-B235-D0FB6BBFE666}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB652824-EC3C-4DC9-B235-D0FB6BBFE666}.Release|Any CPU.Build.0 = Release|Any CPU
+		{718A5707-6CAB-485C-AD6F-FFECD180ED38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{718A5707-6CAB-485C-AD6F-FFECD180ED38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{718A5707-6CAB-485C-AD6F-FFECD180ED38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{718A5707-6CAB-485C-AD6F-FFECD180ED38}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

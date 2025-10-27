@@ -18,27 +18,23 @@ public class FormulaVisitor : CubeCellBaseVisitor<object>
         return Visit(ctx);
     }
 
-    // ---------------- Literals ----------------
-
     public override object VisitNumberExpr([NotNull] CubeCellParser.NumberExprContext context)
     {
-        var text = context.NUMBER().GetText();
+        string? text = context.NUMBER().GetText();
         return BigInteger.Parse(text);
     }
 
     public override object VisitCellRefExpr([NotNull] CubeCellParser.CellRefExprContext context)
     {
-        var name = context.CELL_REF().GetText().ToUpperInvariant();
+        string name = context.CELL_REF().GetText().ToUpperInvariant();
         return _cellValueProvider.GetCellValueByAddress(name) ?? "";
     }
-
-    // ---------------- Arithmetic ----------------
 
     public override object VisitAddSubExpr([NotNull] CubeCellParser.AddSubExprContext context)
     {
         BigInteger left = ToNumber(Visit(context.expression(0)));
         BigInteger right = ToNumber(Visit(context.expression(1)));
-        var op = context.GetChild(1).GetText();
+        string? op = context.GetChild(1).GetText();
 
         return op switch
         {
@@ -52,7 +48,7 @@ public class FormulaVisitor : CubeCellBaseVisitor<object>
     {
         BigInteger left = ToNumber(Visit(context.expression(0)));
         BigInteger right = ToNumber(Visit(context.expression(1)));
-        var op = context.GetChild(1).GetText().ToLowerInvariant();
+        string op = context.GetChild(1).GetText().ToLowerInvariant();
 
         return op switch
         {
@@ -82,12 +78,11 @@ public class FormulaVisitor : CubeCellBaseVisitor<object>
         return BigInteger.Pow(baseValue, (int)exponent);
     }
 
-    // ---------------- Unary ----------------
 
     public override object VisitUnaryPlusMinusExpr([NotNull] CubeCellParser.UnaryPlusMinusExprContext context)
     {
         BigInteger value = ToNumber(Visit(context.expression()));
-        var op = context.GetChild(0).GetText();
+        string? op = context.GetChild(0).GetText();
 
         return op == "-" ? -value : value;
     }
@@ -106,19 +101,18 @@ public class FormulaVisitor : CubeCellBaseVisitor<object>
 
     public override object VisitNotExpr([NotNull] CubeCellParser.NotExprContext context)
     {
-        var value = Visit(context.expression());
+        object? value = Visit(context.expression());
         return !ToBool(value);
     }
 
-    // ---------------- Comparisons ----------------
 
     public override object VisitComparisonExpr([NotNull] CubeCellParser.ComparisonExprContext context)
     {
         BigInteger left = ToNumber(Visit(context.expression(0)));
         BigInteger right = ToNumber(Visit(context.expression(1)));
-        var op = context.GetChild(1).GetText();
+        string? op = context.GetChild(1).GetText();
 
-        var result = op switch
+        bool result = op switch
         {
             "=" => left == right,
             "<>" => left != right,
@@ -132,32 +126,30 @@ public class FormulaVisitor : CubeCellBaseVisitor<object>
         return result;
     }
 
-    // ---------------- Logical ----------------
 
     public override object VisitAndExpr([NotNull] CubeCellParser.AndExprContext context)
     {
-        var left = Visit(context.expression(0));
-        var right = Visit(context.expression(1));
+        object? left = Visit(context.expression(0));
+        object? right = Visit(context.expression(1));
         return ToBool(left) && ToBool(right);
     }
 
     public override object VisitOrExpr([NotNull] CubeCellParser.OrExprContext context)
     {
-        var left = Visit(context.expression(0));
-        var right = Visit(context.expression(1));
+        object? left = Visit(context.expression(0));
+        object? right = Visit(context.expression(1));
         return ToBool(left) || ToBool(right);
     }
 
     public override object VisitEqvExpr([NotNull] CubeCellParser.EqvExprContext context)
     {
-        var left = Visit(context.expression(0));
-        var right = Visit(context.expression(1));
-        var leftBool = ToBool(left);
-        var rightBool = ToBool(right);
+        object? left = Visit(context.expression(0));
+        object? right = Visit(context.expression(1));
+        bool leftBool = ToBool(left);
+        bool rightBool = ToBool(right);
         return leftBool == rightBool;
     }
 
-    // ---------------- Functions ----------------
 
     public override object VisitMaxExpr([NotNull] CubeCellParser.MaxExprContext context)
     {
@@ -203,14 +195,12 @@ public class FormulaVisitor : CubeCellBaseVisitor<object>
         return min ?? BigInteger.Zero;
     }
 
-    // ---------------- Parentheses ----------------
 
     public override object VisitParenExpr([NotNull] CubeCellParser.ParenExprContext context)
     {
         return Visit(context.expression());
     }
 
-    // ---------------- Helpers ----------------
 
     private static BigInteger ToNumber(object value)
     {
