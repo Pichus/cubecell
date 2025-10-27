@@ -9,20 +9,18 @@ public class DependencyExtractor : CubeCellBaseVisitor<object>
 
     public HashSet<string> ExtractDependencies(string formula)
     {
-        if (!formula.StartsWith("="))
+        if (formula.StartsWith("="))
         {
-            return [];
+            formula = formula.Substring(1);
         }
 
-        formula = formula.Substring(1);
-        
-        var inputStream = new AntlrInputStream(formula);
+        AntlrInputStream inputStream = new(formula);
 
-        var lexer = new CubeCellLexer(inputStream);
+        CubeCellLexer lexer = new(inputStream);
 
-        var tokenStream = new CommonTokenStream(lexer);
+        CommonTokenStream tokenStream = new(lexer);
 
-        var parser = new CubeCellParser(tokenStream);
+        CubeCellParser parser = new(tokenStream);
 
         CubeCellParser.ExpressionContext? context = parser.expression();
 
@@ -33,7 +31,7 @@ public class DependencyExtractor : CubeCellBaseVisitor<object>
 
     public override object VisitCellRefExpr([NotNull] CubeCellParser.CellRefExprContext context)
     {
-        var cellAddress = context.CELL_REF().GetText().ToUpperInvariant();
+        string cellAddress = context.CELL_REF().GetText().ToUpperInvariant();
         _dependencies.Add(cellAddress);
         return null;
     }

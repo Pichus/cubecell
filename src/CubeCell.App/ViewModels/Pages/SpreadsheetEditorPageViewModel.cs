@@ -33,17 +33,17 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         _spreadsheetPersistenceService = new SpreadsheetPersistenceService(_spreadsheet);
 
         _cellCalculationService = new CellCalculationService(_spreadsheet, _dependencyGraph,
-            new FormulaCalculator(new FormulaEvaluator(_spreadsheet)), new DependencyExtractor());
+            new FormulaCalculator(new FormulaEvaluator(_spreadsheet)), new DependencyExtractor(),
+            _spreadsheetViewModel);
 
         AttachCellModelToCellViewModelCommand =
-            ReactiveCommand.Create<CellCoordinates>(AttachCellModelToCellViewModelCommandHandler);
-        CalculateCellFormulaCommand = ReactiveCommand.Create<CellCoordinates>(CalculateCellFormulaCommandHandler);
+            ReactiveCommand.Create<CellCoordinates?>(AttachCellModelToCellViewModelCommandHandler);
+        CalculateCellFormulaCommand = ReactiveCommand.Create<CellCoordinates?>(CalculateCellFormulaCommandHandler);
         UpdateLastSelectedCellCommand = ReactiveCommand.Create<CellCoordinates>(UpdateLastSelectedCellCommandHandler);
-        CalculateSelectedCellFormulaCommand = ReactiveCommand.Create(CalculateSelectedCellFormulaCommandHandler);
-        AttachCellModelToLastSelectedCellViewModelCommand =
-            ReactiveCommand.Create(AttachCellModelToLastSelectedCellViewModelCommandHandler);
         SaveCommand = ReactiveCommand.Create(SaveCommandHandler);
         ExportAsCommand = ReactiveCommand.Create<ExportAsRequest>(ExportAsCommandHandler);
+        RecalculateCellDependantsCommand =
+            ReactiveCommand.Create<CellCoordinates?>(RecalculateCellDependantsCommandHandler);
     }
 
     public SpreadsheetEditorPageViewModel(IScreen hostScreen, int rowCount, int colCount, Spreadsheet spreadsheet,
@@ -59,20 +59,23 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
 
         _spreadsheetViewModel = new SpreadsheetViewModel(_spreadsheet);
 
+        _cellCalculationService = new CellCalculationService(_spreadsheet, _dependencyGraph,
+            new FormulaCalculator(new FormulaEvaluator(_spreadsheet)), new DependencyExtractor(),
+            _spreadsheetViewModel);
+
 
         _spreadsheetPersistenceService = new SpreadsheetPersistenceService(_spreadsheet);
 
         InitializeSpreadsheet();
 
         AttachCellModelToCellViewModelCommand =
-            ReactiveCommand.Create<CellCoordinates>(AttachCellModelToCellViewModelCommandHandler);
-        CalculateCellFormulaCommand = ReactiveCommand.Create<CellCoordinates>(CalculateCellFormulaCommandHandler);
+            ReactiveCommand.Create<CellCoordinates?>(AttachCellModelToCellViewModelCommandHandler);
+        CalculateCellFormulaCommand = ReactiveCommand.Create<CellCoordinates?>(CalculateCellFormulaCommandHandler);
         UpdateLastSelectedCellCommand = ReactiveCommand.Create<CellCoordinates>(UpdateLastSelectedCellCommandHandler);
-        CalculateSelectedCellFormulaCommand = ReactiveCommand.Create(CalculateSelectedCellFormulaCommandHandler);
-        AttachCellModelToLastSelectedCellViewModelCommand =
-            ReactiveCommand.Create(AttachCellModelToLastSelectedCellViewModelCommandHandler);
         SaveCommand = ReactiveCommand.Create(SaveCommandHandler);
         ExportAsCommand = ReactiveCommand.Create<ExportAsRequest>(ExportAsCommandHandler);
+        RecalculateCellDependantsCommand =
+            ReactiveCommand.Create<CellCoordinates?>(RecalculateCellDependantsCommandHandler);
     }
 
     public string? CurrentSpreadSheetFileLocation { get; private set; }
@@ -83,11 +86,10 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _spreadSheetName, value);
     }
 
-    public ReactiveCommand<CellCoordinates, Unit> CalculateCellFormulaCommand { get; }
-    public ReactiveCommand<Unit, Unit> CalculateSelectedCellFormulaCommand { get; }
+    public ReactiveCommand<CellCoordinates?, Unit> CalculateCellFormulaCommand { get; }
+    public ReactiveCommand<CellCoordinates?, Unit> RecalculateCellDependantsCommand { get; }
 
-    public ReactiveCommand<CellCoordinates, Unit> AttachCellModelToCellViewModelCommand { get; }
-    public ReactiveCommand<Unit, Unit> AttachCellModelToLastSelectedCellViewModelCommand { get; }
+    public ReactiveCommand<CellCoordinates?, Unit> AttachCellModelToCellViewModelCommand { get; }
     public ReactiveCommand<CellCoordinates, Unit> UpdateLastSelectedCellCommand { get; }
     public ReactiveCommand<Unit, Unit> SaveCommand { get; }
     public ReactiveCommand<ExportAsRequest, Unit> ExportAsCommand { get; }
@@ -120,6 +122,22 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
     public string? UrlPathSegment { get; } = "spreadsheetEditor";
     public IScreen HostScreen { get; }
 
+    private void RecalculateCellDependantsCommandHandler(CellCoordinates? cellCoordinates = null)
+    {
+        if (cellCoordinates is null && _lastSelectedCellCoordinates is not null)
+        {
+            _cellCalculationService.CalculateAndRerenderDependants(_lastSelectedCellCoordinates.Value);
+            return;
+        }
+
+        if (cellCoordinates is null)
+        {
+            return;
+        }
+
+        _cellCalculationService.CalculateAndRerenderDependants(cellCoordinates.Value);
+    }
+
     private void InitializeSpreadsheet()
     {
         foreach ((CellCoordinates key, Cell value) in _spreadsheet.GetCells())
@@ -130,7 +148,11 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
             {
                 if (value.Formula.StartsWith("="))
                 {
-                    cell = new Cell { Formula = value.Formula, Value = "computed value" };
+                    cell = new Cell
+                    {
+                        Formula = value.Formula,
+                        Value = new FormulaCalculator(new FormulaEvaluator(_spreadsheet)).Calculate(value.Formula)
+                    };
                 }
                 else
                 {
@@ -166,47 +188,51 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         _spreadsheetPersistenceService.UpdateExistingSpreadsheetAndSave(CurrentSpreadSheetFileLocation);
     }
 
-    private void AttachCellModelToLastSelectedCellViewModelCommandHandler()
-    {
-        if (_lastSelectedCell is null || _lastSelectedCellCoordinates is null)
-        {
-            return;
-        }
-
-        AttachCellModelToCellViewModel(_lastSelectedCellCoordinates.Value, _lastSelectedCell);
-    }
-
-    private void CalculateSelectedCellFormulaCommandHandler()
-    {
-        if (_lastSelectedCellCoordinates is null)
-        {
-            return;
-        }
-
-        _cellCalculationService.CalculateAndRerenderCell(_lastSelectedCellCoordinates.Value);
-    }
-
     private void UpdateLastSelectedCellCommandHandler(CellCoordinates cellCoordinates)
     {
         LastSelectedCellCoordinates = cellCoordinates;
         LastSelectedCell = _spreadsheetViewModel.GetCell(cellCoordinates.Col, cellCoordinates.Row);
     }
 
-    private void CalculateCellFormulaCommandHandler(CellCoordinates cellCoordinates)
+    private void CalculateCellFormulaCommandHandler(CellCoordinates? cellCoordinates)
     {
-        _cellCalculationService.CalculateAndRerenderCell(cellCoordinates);
+        if (cellCoordinates is null && _lastSelectedCellCoordinates is not null)
+        {
+            _cellCalculationService.CalculateAndRerenderCell(_lastSelectedCellCoordinates.Value);
+            return;
+        }
+
+        if (cellCoordinates is null)
+        {
+            return;
+        }
+
+        _cellCalculationService.CalculateAndRerenderCell(cellCoordinates.Value);
     }
 
-    private void AttachCellModelToCellViewModelCommandHandler(CellCoordinates cellCoordinates)
+    private void AttachCellModelToCellViewModelCommandHandler(CellCoordinates? cellCoordinates)
     {
-        CellViewModel? cellViewModel = _spreadsheetViewModel.GetCell(cellCoordinates.Col, cellCoordinates.Row);
+        if (cellCoordinates is null && _lastSelectedCellCoordinates is not null && _lastSelectedCell is not null &&
+            !_lastSelectedCell.HasCellModelAttached)
+        {
+            AttachCellModelToCellViewModel(_lastSelectedCellCoordinates.Value, _lastSelectedCell);
+            return;
+        }
+
+        if (cellCoordinates is null)
+        {
+            return;
+        }
+
+        CellViewModel? cellViewModel =
+            _spreadsheetViewModel.GetCell(cellCoordinates.Value.Col, cellCoordinates.Value.Row);
 
         if (cellViewModel is null || cellViewModel.HasCellModelAttached)
         {
             return;
         }
 
-        AttachCellModelToCellViewModel(cellCoordinates, cellViewModel);
+        AttachCellModelToCellViewModel(cellCoordinates.Value, cellViewModel);
     }
 
     private void AttachCellModelToCellViewModel(CellCoordinates cellCoordinates, CellViewModel cellViewModel)

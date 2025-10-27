@@ -66,13 +66,13 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
 
     private void DefineGridStructure(int rowCount, int colCount)
     {
-        for (var i = 0; i < rowCount; i++)
+        for (int i = 0; i < rowCount; i++)
         {
             CellsGrid.RowDefinitions.Add(new RowDefinition(new GridLength(DefaultCellHeight)));
             RowHeaderGrid.RowDefinitions.Add(new RowDefinition(new GridLength(DefaultCellHeight)));
         }
 
-        for (var j = 0; j < colCount; j++)
+        for (int j = 0; j < colCount; j++)
         {
             CellsGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(DefaultCellWidth)));
             ColumnHeaderGrid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(DefaultCellWidth)));
@@ -81,7 +81,7 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
 
     private void FillRowHeadersGrid(int rowCount)
     {
-        for (var row = 0; row < rowCount; row++)
+        for (int row = 0; row < rowCount; row++)
         {
             Border header = CreateRowHeaderElement((row + 1).ToString());
 
@@ -92,7 +92,7 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
 
     private void FillColHeadersGrid(int colCount)
     {
-        for (var col = 0; col < colCount; col++)
+        for (int col = 0; col < colCount; col++)
         {
             Border header = CreateColHeaderElement(CellAddressUtils.ColumnIndexToLetters(col));
 
@@ -103,16 +103,16 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
 
     private void FillCellsGrid(int rowCount, int colCount)
     {
-        for (var row = 0; row < rowCount; row++)
+        for (int row = 0; row < rowCount; row++)
         {
-            for (var col = 0; col < colCount; col++)
+            for (int col = 0; col < colCount; col++)
             {
                 Border cellElement = CreateCellElement();
 
                 CellViewModel? cellViewModelForBinding =
                     ViewModel?.GetCellViewModelForBinding(new CellCoordinates(col, row));
 
-                var textBox = (TextBox)cellElement.Child!;
+                TextBox textBox = (TextBox)cellElement.Child!;
 
                 textBox.Bind(TextBox.TextProperty,
                     new Binding { Path = "DisplayText", Mode = BindingMode.TwoWay, Source = cellViewModelForBinding });
@@ -168,7 +168,7 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
 
     private Border CreateCellElement(string text = "")
     {
-        var textBox = new TextBox
+        TextBox textBox = new()
         {
             Text = text,
             CornerRadius = new CornerRadius(0),
@@ -186,7 +186,7 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
             MinWidth = 0
         };
 
-        var border = new Border
+        Border border = new()
         {
             Padding = new Thickness(2),
             BorderBrush = Brush.Parse("#D0D0D0"),
@@ -207,12 +207,13 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
             {
                 if (!string.IsNullOrEmpty(cellInputTextBox.Text))
                 {
-                    var column = cellInput.GetValue(Grid.ColumnProperty);
-                    var row = cellInput.GetValue(Grid.RowProperty);
-                    var cellCoordinates = new CellCoordinates(column, row);
+                    int column = cellInput.GetValue(Grid.ColumnProperty);
+                    int row = cellInput.GetValue(Grid.RowProperty);
+                    CellCoordinates cellCoordinates = new(column, row);
                     await vm.AttachCellModelToCellViewModelCommand.Execute(cellCoordinates);
 
                     await vm.CalculateCellFormulaCommand.Execute(cellCoordinates);
+                    await vm.RecalculateCellDependantsCommand.Execute(cellCoordinates);
                 }
             }
         }
@@ -224,9 +225,9 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
         {
             if (sender is TextBox cellInputTextBox && cellInputTextBox.Parent is Border cellInput)
             {
-                var column = cellInput.GetValue(Grid.ColumnProperty);
-                var row = cellInput.GetValue(Grid.RowProperty);
-                var cellCoordinates = new CellCoordinates(column, row);
+                int column = cellInput.GetValue(Grid.ColumnProperty);
+                int row = cellInput.GetValue(Grid.RowProperty);
+                CellCoordinates cellCoordinates = new(column, row);
                 await vm.UpdateLastSelectedCellCommand.Execute(cellCoordinates);
             }
         }
@@ -240,9 +241,10 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
             {
                 if (!string.IsNullOrEmpty(formulaInputTextBox.Text))
                 {
-                    await vm.AttachCellModelToLastSelectedCellViewModelCommand.Execute();
+                    await vm.AttachCellModelToCellViewModelCommand.Execute();
 
-                    await vm.CalculateSelectedCellFormulaCommand.Execute();
+                    await vm.CalculateCellFormulaCommand.Execute();
+                    await vm.RecalculateCellDependantsCommand.Execute();
                 }
             }
         }
@@ -261,7 +263,7 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
 
     private async void ExportAsButton_OnClick(object? sender, RoutedEventArgs e)
     {
-        var topLevel = TopLevel.GetTopLevel(this);
+        TopLevel? topLevel = TopLevel.GetTopLevel(this);
 
         if (topLevel is null)
         {

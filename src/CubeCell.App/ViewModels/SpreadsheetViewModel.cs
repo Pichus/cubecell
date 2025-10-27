@@ -13,7 +13,6 @@ public class SpreadsheetViewModel
     public SpreadsheetViewModel(Spreadsheet spreadsheetModel)
     {
         _spreadsheetModel = spreadsheetModel;
-        spreadsheetModel.CellChanged += OnSpreadsheetCellChanged;
     }
 
     public void SetCell(CellCoordinates coordinates, CellViewModel cell)
@@ -32,11 +31,5 @@ public class SpreadsheetViewModel
     {
         (int col, int row) = CellAddressUtils.AddressToCoordinates(address);
         return GetCell(col, row) ?? null;
-    }
-
-    private void OnSpreadsheetCellChanged(object? sender, CellChangedEventArgs eventArgs)
-    {
-        CellViewModel? cellViewModel = GetCell(eventArgs.CellCoordinates.Col, eventArgs.CellCoordinates.Row);
-        cellViewModel?.Refresh();
     }
 }
