@@ -1,8 +1,4 @@
-using System.Collections.Generic;
-
 using ClosedXML.Excel;
-
-using CubeCell.App.Models;
 
 namespace CubeCell.App.Service;
 
@@ -18,7 +14,7 @@ public class SpreadsheetPersistenceService : ISpreadsheetPersistenceService
     public void CreateSpreadsheetAndSave(string filePath, string fileName)
     {
         using var workbook = new XLWorkbook();
-        IXLWorksheet? worksheet = workbook.AddWorksheet("Sheet1");
+        var worksheet = workbook.AddWorksheet("Sheet1");
 
         AddCellsFromCellStorageToWorksheet(worksheet);
 
@@ -30,7 +26,7 @@ public class SpreadsheetPersistenceService : ISpreadsheetPersistenceService
         using var workbook = new XLWorkbook(filepath);
 
         IXLWorksheet worksheet;
-        if (workbook.TryGetWorksheet("Sheet1", out IXLWorksheet? existingSheet))
+        if (workbook.TryGetWorksheet("Sheet1", out var existingSheet))
         {
             worksheet = existingSheet;
         }
@@ -46,9 +42,9 @@ public class SpreadsheetPersistenceService : ISpreadsheetPersistenceService
 
     private void AddCellsFromCellStorageToWorksheet(IXLWorksheet worksheet)
     {
-        IReadOnlyDictionary<CellCoordinates, Cell> cells = _cellReader.GetCells();
+        var cells = _cellReader.GetCells();
 
-        foreach ((CellCoordinates key, Cell value) in cells)
+        foreach (var (key, value) in cells)
         {
             if (!string.IsNullOrEmpty(value.Formula) && value.Formula.StartsWith("="))
             {
