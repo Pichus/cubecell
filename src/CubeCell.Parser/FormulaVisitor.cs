@@ -6,11 +6,11 @@ namespace CubeCell.Parser;
 
 public class FormulaVisitor : CubeCellBaseVisitor<object>
 {
-    private readonly IReadonlyCellStorage _cellStorage;
+    private readonly ICellValueProvider _cellValueProvider;
 
-    public FormulaVisitor(IReadonlyCellStorage cellStorage)
+    public FormulaVisitor(ICellValueProvider cellValueProvider)
     {
-        _cellStorage = cellStorage;
+        _cellValueProvider = cellValueProvider;
     }
 
     public object Evaluate(CubeCellParser.FormulaContext ctx)
@@ -29,7 +29,7 @@ public class FormulaVisitor : CubeCellBaseVisitor<object>
     public override object VisitCellRefExpr([NotNull] CubeCellParser.CellRefExprContext context)
     {
         var name = context.CELL_REF().GetText().ToUpperInvariant();
-        return _cellStorage.GetCellValueByAddress(name) ?? "";
+        return _cellValueProvider.GetCellValueByAddress(name) ?? "";
     }
 
     // ---------------- Arithmetic ----------------

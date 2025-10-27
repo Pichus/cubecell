@@ -25,6 +25,7 @@
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6"/>
+        <PackageReference Include="ClosedXML" Version="0.105.0"/>
     </ItemGroup>
 
     <ItemGroup>

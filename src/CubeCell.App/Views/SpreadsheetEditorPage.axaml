@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="clr-namespace:CubeCell.App.ViewModels"
              xmlns:pages="clr-namespace:CubeCell.App.ViewModels.Pages"
              x:DataType="pages:SpreadsheetEditorPageViewModel"
              mc:Ignorable="d"
@@ -11,13 +10,14 @@
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
-                <MenuItem Header="_Open..." />
-                <Separator />
-                <MenuItem Header="_Exit" />
+                <MenuItem Header="_Import" Click="ImportButton_OnClick" />
+                <MenuItem Header="_Save" Click="SaveButton_OnClick" />
+                <MenuItem Header="_Export as" Click="ExportAsButton_OnClick" />
+                <MenuItem Header="_Exit" Command="{Binding ExitCommand}" />
             </MenuItem>
             <MenuItem Header="_Edit">
-                <MenuItem Header="Copy" />
-                <MenuItem Header="Paste" />
+                <!-- <MenuItem Header="Copy" /> -->
+                <!-- <MenuItem Header="Paste" /> -->
             </MenuItem>
         </Menu>
 

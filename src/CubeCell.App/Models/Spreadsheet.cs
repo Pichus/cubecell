@@ -1,24 +1,18 @@
-using System;
 using System.Collections.Generic;
 
+using CubeCell.App.Service;
 using CubeCell.App.Utils;
 using CubeCell.Parser;
 
 namespace CubeCell.App.Models;
 
-public class Spreadsheet : IReadonlyCellStorage
+public class Spreadsheet : ICellValueProvider, IReadOnlyCellStorage
 {
     private readonly Dictionary<CellCoordinates, Cell> _cells = new();
 
     public string? GetCellValueByAddress(string address)
     {
         return GetCell(address)?.Value;
-    }
-
-    public void SetCell(CellCoordinates coordinates, Cell cell)
-    {
-        _cells[coordinates] = cell;
-        CellChanged?.Invoke(this, new CellChangedEventArgs(coordinates, cell));
     }
 
     public Cell? GetCell(int col, int row)
@@ -34,17 +28,13 @@ public class Spreadsheet : IReadonlyCellStorage
         return GetCell(col, row);
     }
 
-    public event EventHandler<CellChangedEventArgs>? CellChanged;
-}
-
-public class CellChangedEventArgs : EventArgs
-{
-    public CellChangedEventArgs(CellCoordinates cellCoordinates, Cell cell)
+    public IReadOnlyDictionary<CellCoordinates, Cell> GetCells()
     {
-        CellCoordinates = cellCoordinates;
-        Cell = cell;
+        return _cells.AsReadOnly();
     }
 
-    public CellCoordinates CellCoordinates { get; }
-    public Cell Cell { get; }
+    public void SetCell(CellCoordinates coordinates, Cell cell)
+    {
+        _cells[coordinates] = cell;
+    }
 }

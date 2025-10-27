@@ -1,6 +1,6 @@
 namespace CubeCell.Parser;
 
-public interface IReadonlyCellStorage
+public interface ICellValueProvider
 {
     public string? GetCellValueByAddress(string address);
 }

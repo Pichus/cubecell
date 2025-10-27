@@ -8,6 +8,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using Avalonia.ReactiveUI;
 
 using CubeCell.App.Models;
@@ -244,6 +245,54 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
                     await vm.CalculateSelectedCellFormulaCommand.Execute();
                 }
             }
+        }
+    }
+
+    private void ImportButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async void SaveButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel is null || ViewModel.CurrentSpreadSheetFileLocation is null)
+        {
+            ExportAsButton_OnClick(sender, e);
+            return;
+        }
+
+        await ViewModel.SaveCommand.Execute();
+    }
+
+    private async void ExportAsButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+
+        if (topLevel is null)
+        {
+            return;
+        }
+
+        IStorageFile? file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Save cubecell spreadsheet",
+            SuggestedFileName = ViewModel?.SpreadSheetName,
+            DefaultExtension = "cubecell.xlsx",
+            ShowOverwritePrompt = true,
+            FileTypeChoices =
+            [
+                new FilePickerFileType("Cubecell Spreadsheet")
+                {
+                    Patterns = ["*.cubecell.xlsx"],
+                    AppleUniformTypeIdentifiers = ["org.openxmlformats.spreadsheetml.sheet"],
+                    MimeTypes = ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
+                }
+            ]
+        });
+
+        if (file is not null && ViewModel is not null)
+        {
+            await ViewModel.ExportAsCommand.Execute(new ExportAsRequest(file.Path.LocalPath, file.Name));
         }
     }
 }

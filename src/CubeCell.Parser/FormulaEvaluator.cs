@@ -4,11 +4,11 @@ namespace CubeCell.Parser;
 
 public class FormulaEvaluator
 {
-    private readonly IReadonlyCellStorage _cellStorage;
+    private readonly ICellValueProvider _cellValueProvider;
 
-    public FormulaEvaluator(IReadonlyCellStorage cellStorage)
+    public FormulaEvaluator(ICellValueProvider cellValueProvider)
     {
-        _cellStorage = cellStorage;
+        _cellValueProvider = cellValueProvider;
     }
 
     public object Evaluate(string formula)
@@ -28,7 +28,7 @@ public class FormulaEvaluator
 
         CubeCellParser.ExpressionContext? context = parser.expression();
 
-        var visitor = new FormulaVisitor(_cellStorage);
+        var visitor = new FormulaVisitor(_cellValueProvider);
         return visitor.Visit(context);
     }
 }
