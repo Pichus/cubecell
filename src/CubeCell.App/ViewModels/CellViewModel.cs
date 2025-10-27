@@ -17,6 +17,8 @@ public class CellViewModel : ReactiveObject
         _cellModel = cellModel;
     }
 
+    public bool HasCellModelAttached => _cellModel is not null;
+
     public string Value { get; private set; } = "";
 
     public string DisplayText
