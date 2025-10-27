@@ -248,11 +248,6 @@ public partial class SpreadsheetEditorPage : ReactiveUserControl<SpreadsheetEdit
         }
     }
 
-    private void ImportButton_OnClick(object? sender, RoutedEventArgs e)
-    {
-        throw new NotImplementedException();
-    }
-
     private async void SaveButton_OnClick(object? sender, RoutedEventArgs e)
     {
         if (ViewModel is null || ViewModel.CurrentSpreadSheetFileLocation is null)

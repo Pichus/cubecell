@@ -18,7 +18,6 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
     private readonly Spreadsheet _spreadsheet = new();
     private readonly ISpreadsheetPersistenceService _spreadsheetPersistenceService;
     private readonly SpreadsheetViewModel _spreadsheetViewModel = new();
-
     private int _colCount;
 
     private CellViewModel? _lastSelectedCell;
@@ -33,6 +32,32 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
         ColCount = colCount;
 
         _spreadsheetPersistenceService = new SpreadsheetPersistenceService(_spreadsheet);
+
+        AttachCellModelToCellViewModelCommand =
+            ReactiveCommand.Create<CellCoordinates>(AttachCellModelToCellViewModelCommandHandler);
+        CalculateCellFormulaCommand = ReactiveCommand.Create<CellCoordinates>(CalculateCellFormulaCommandHandler);
+        UpdateLastSelectedCellCommand = ReactiveCommand.Create<CellCoordinates>(UpdateLastSelectedCellCommandHandler);
+        CalculateSelectedCellFormulaCommand = ReactiveCommand.Create(CalculateSelectedCellFormulaCommandHandler);
+        AttachCellModelToLastSelectedCellViewModelCommand =
+            ReactiveCommand.Create(AttachCellModelToLastSelectedCellViewModelCommandHandler);
+        SaveCommand = ReactiveCommand.Create(SaveCommandHandler);
+        ExportAsCommand = ReactiveCommand.Create<ExportAsRequest>(ExportAsCommandHandler);
+    }
+
+    public SpreadsheetEditorPageViewModel(IScreen hostScreen, int rowCount, int colCount, Spreadsheet spreadsheet,
+        string currentSpreadSheetFileLocation)
+    {
+        CurrentSpreadSheetFileLocation = currentSpreadSheetFileLocation;
+        
+        _spreadsheet = spreadsheet;
+
+        HostScreen = hostScreen;
+        _rowCount = rowCount;
+        ColCount = colCount;
+
+        _spreadsheetPersistenceService = new SpreadsheetPersistenceService(_spreadsheet);
+
+        InitializeSpreadsheet();
 
         AttachCellModelToCellViewModelCommand =
             ReactiveCommand.Create<CellCoordinates>(AttachCellModelToCellViewModelCommandHandler);
@@ -89,6 +114,36 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
 
     public string? UrlPathSegment { get; } = "spreadsheetEditor";
     public IScreen HostScreen { get; }
+
+    private void InitializeSpreadsheet()
+    {
+        foreach ((CellCoordinates key, Cell value) in _spreadsheet.GetCells())
+        {
+            Cell? cell = null;
+
+            if (value.Formula is not null)
+            {
+                if (value.Formula.StartsWith("="))
+                {
+                    cell = new Cell { Formula = value.Formula, Value = "computed value" };
+                }
+                else
+                {
+                    cell = new Cell { Formula = value.Formula, Value = value.Formula };
+                }
+            }
+            else if (value.Value is not null)
+            {
+                cell = new Cell { Formula = value.Value, Value = value.Value };
+            }
+
+            if (cell is not null)
+            {
+                _spreadsheet.SetCell(key, cell);
+                _spreadsheetViewModel.SetCell(key, new CellViewModel(cell));
+            }
+        }
+    }
 
     private void ExportAsCommandHandler(ExportAsRequest request)
     {
@@ -218,7 +273,7 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
     {
         CellViewModel? cellViewModel = _spreadsheetViewModel.GetCell(cellCoordinates.Col, cellCoordinates.Row);
 
-        if (cellViewModel is null)
+        if (cellViewModel is null || cellViewModel.HasCellModelAttached)
         {
             return;
         }

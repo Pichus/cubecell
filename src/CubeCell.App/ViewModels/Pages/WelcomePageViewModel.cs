@@ -1,7 +1,7 @@
-using System.Collections.ObjectModel;
 using System.Reactive;
-using System.Windows.Input;
 
+using CubeCell.App.Models;
+using CubeCell.App.Service;
 using CubeCell.App.ViewModels.Abstractions;
 
 using ReactiveUI;
@@ -10,13 +10,15 @@ namespace CubeCell.App.ViewModels.Pages;
 
 public class WelcomePageViewModel : ViewModelBase, IRoutableViewModel
 {
-    private int _colCount = 26;
+    private readonly ISpreadsheetImportService _spreadsheetImportService;
 
+    private int _colCount = 26;
     private int _rowCount = 100;
 
     public WelcomePageViewModel(IScreen screen)
     {
         HostScreen = screen;
+        _spreadsheetImportService = new SpreadsheetImportService();
 
         GoToAboutPageCommand = ReactiveCommand.CreateFromObservable(() =>
             HostScreen.Router.Navigate.Execute(new AboutPageViewModel(HostScreen))
@@ -26,6 +28,8 @@ public class WelcomePageViewModel : ViewModelBase, IRoutableViewModel
             ReactiveCommand.CreateFromObservable(() =>
                 HostScreen.Router.Navigate.Execute(
                     new SpreadsheetEditorPageViewModel(HostScreen, _rowCount, _colCount)));
+
+        OpenFileCommand = ReactiveCommand.Create<string>(OpenFileCommandHandler);
     }
 
     public int RowCount
@@ -43,16 +47,18 @@ public class WelcomePageViewModel : ViewModelBase, IRoutableViewModel
     public ReactiveCommand<Unit, IRoutableViewModel> GoToAboutPageCommand { get; }
     public ReactiveCommand<Unit, IRoutableViewModel> GoToSpreadSheetEditorPageCommand { get; }
 
-    public bool IsGoogleAuthorized { get; set; }
-    public string GoogleUserName { get; set; }
-    public string GoogleUserEmail { get; set; }
-    public string GoogleUserInitial { get; set; }
-    public ObservableCollection<string> RecentGoogleFiles { get; set; }
-    public ICommand GoogleSignInCommand { get; }
-    public ICommand GoogleSignOutCommand { get; }
-    public ICommand OpenGoogleFileCommand { get; }
-    public ICommand RefreshGoogleFilesCommand { get; }
+    public ReactiveCommand<string, Unit> OpenFileCommand { get; }
+
 
     public string? UrlPathSegment { get; } = "welcome";
     public IScreen HostScreen { get; }
+
+    private void OpenFileCommandHandler(string filePath)
+    {
+        var spreadsheet = new Spreadsheet();
+        SpreadsheetSize spreadsheetSize = _spreadsheetImportService.LoadSpreadsheetFromFile(spreadsheet, filePath);
+        HostScreen.Router.Navigate.Execute(
+            new SpreadsheetEditorPageViewModel(HostScreen, spreadsheetSize.RowCount, spreadsheetSize.ColCount,
+                spreadsheet, filePath));
+    }
 }
