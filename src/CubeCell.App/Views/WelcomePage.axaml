@@ -161,6 +161,24 @@
                 </Grid>
             </Border>
 
+            <Border Grid.Column="2">
+                <StackPanel>
+                    <Button IsEnabled="{Binding !UserAuthorized}" Command="{Binding SignInWithGoogleCommand}">
+                        Load files from drive
+                    </Button>
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding FileViewModels}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding Name}"
+                                            Command="{Binding $parent[ItemsControl].((pages:WelcomePageViewModel)DataContext).OpenCloudFileCommand}"
+                                            CommandParameter="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
         </Grid>
     </Border>
 </UserControl>

@@ -485,3 +485,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# secrets
+*client_secret.json
+/src/CubeCell.App/appsettings.json

@@ -48,7 +48,7 @@ public partial class WelcomePage : ReactiveUserControl<WelcomePageViewModel>
         if (files.Count == 1 && ViewModel is not null)
         {
             IStorageFile file = files[0];
-            await ViewModel.OpenFileCommand.Execute(file.Path.LocalPath);
+            await ViewModel.OpenLocalFileCommand.Execute(file.Path.LocalPath);
         }
     }
 }

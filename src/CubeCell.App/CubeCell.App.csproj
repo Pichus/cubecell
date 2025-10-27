@@ -14,6 +14,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Avalonia" Version="11.3.6"/>
         <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.6"/>
         <PackageReference Include="Avalonia.Desktop" Version="11.3.6"/>
@@ -26,6 +32,8 @@
         </PackageReference>
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6"/>
         <PackageReference Include="ClosedXML" Version="0.105.0"/>
+        <PackageReference Include="Google.Apis.Drive.v3" Version="1.72.0.3938"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.10"/>
     </ItemGroup>
 
     <ItemGroup>
