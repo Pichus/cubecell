@@ -1,0 +1,30 @@
+@startuml
+!theme plain
+left to right direction
+
+actor "Користувач" as user
+
+rectangle "CubeCell" {
+    usecase "Створити нову таблицю" as UC_CreateSheet
+    usecase "Відкрити існуючу таблицю" as UC_OpenSheet
+    usecase "Редагувати комірку" as UC_EditCell
+    usecase "Ввести формулу" as UC_EnterFormula
+    usecase "Обчислити формулу" as UC_CalculateFormula
+    usecase "Зберегти таблицю" as UC_SaveSheet
+    usecase "Експортувати у Excel" as UC_ExportExcel
+    usecase "Імпортувати з Excel" as UC_ImportExcel
+    usecase "Синхронізувати з хмарою" as UC_SyncCloud
+}
+
+user --> UC_CreateSheet
+user --> UC_OpenSheet
+user --> UC_EditCell
+user --> UC_EnterFormula
+user --> UC_SaveSheet
+user --> UC_ExportExcel
+user --> UC_ImportExcel
+user --> UC_SyncCloud
+
+UC_EnterFormula ..> UC_CalculateFormula : «include»
+
+@enduml
