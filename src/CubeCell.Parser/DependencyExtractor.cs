@@ -1,6 +1,8 @@
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 
+using CubeCell.Parser.Grammar;
+
 namespace CubeCell.Parser;
 
 public class DependencyExtractor : CubeCellBaseVisitor<object>

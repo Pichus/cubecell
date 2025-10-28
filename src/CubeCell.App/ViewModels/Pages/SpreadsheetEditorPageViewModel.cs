@@ -212,8 +212,8 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
 
     private void AttachCellModelToCellViewModelCommandHandler(CellCoordinates? cellCoordinates)
     {
-        if (cellCoordinates is null && _lastSelectedCellCoordinates is not null && _lastSelectedCell is not null &&
-            !_lastSelectedCell.HasCellModelAttached)
+        if ((cellCoordinates is null) && (_lastSelectedCellCoordinates is not null) && (_lastSelectedCell is not null) &&
+            (!_lastSelectedCell.HasCellModelAttached))
         {
             AttachCellModelToCellViewModel(_lastSelectedCellCoordinates.Value, _lastSelectedCell);
             return;

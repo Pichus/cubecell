@@ -42,6 +42,7 @@ public class CellCalculationService
         if (!_dependencyGraph.TrySetDependencies(cellAddress, dependencies))
         {
             cellModel.Value = "#ERROR";
+            RerenderViewModel(cellCoordinates);
             return;
         }
 

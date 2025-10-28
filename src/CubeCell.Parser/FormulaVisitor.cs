@@ -2,6 +2,8 @@ using System.Numerics;
 
 using Antlr4.Runtime.Misc;
 
+using CubeCell.Parser.Grammar;
+
 namespace CubeCell.Parser;
 
 public class FormulaVisitor : CubeCellBaseVisitor<object>
