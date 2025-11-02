@@ -51,17 +51,31 @@ public class CellCalculationService
         RerenderViewModel(cellCoordinates);
     }
 
-    public void CalculateAndRerenderDependants(CellCoordinates cellCoordinates)
+    public bool TryCalculateAndRerenderDependants(CellCoordinates cellCoordinates)
     {
         HashSet<string> dependants =
             _dependencyGraph.GetCellDependants(CellAddressUtils.CoordinatesToAddress(cellCoordinates));
 
-        foreach (string dependant in dependants)
+        var dependencyGraphTopologicalOrder = _dependencyGraph.GetTopologicalOrder();
+
+        if (dependencyGraphTopologicalOrder is null)
         {
+            return false;
+        }
+
+        foreach (string dependant in dependencyGraphTopologicalOrder)
+        {
+            if (!dependants.Contains(dependant))
+            {
+                continue;
+            }
+            
             CellCoordinates dependantCoordinates = CellAddressUtils.AddressToCoordinates(dependant);
 
             CalculateAndRerenderCell(dependantCoordinates);
         }
+
+        return true;
     }
 
     private void RerenderViewModel(CellCoordinates cellCoordinates)

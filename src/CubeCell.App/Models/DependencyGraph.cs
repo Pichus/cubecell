@@ -20,7 +20,7 @@ public class DependencyGraph
         _dependants.TryAdd(dependencyAddress, new HashSet<string>());
         _dependants[dependencyAddress].Add(dependantAddress);
 
-        if (HasCycle(dependantAddress))
+        if (HasCycle())
         {
             RemoveDependency(dependantAddress, dependencyAddress);
             return false;
@@ -60,7 +60,7 @@ public class DependencyGraph
             _dependants[dependency].Add(dependantAddress);
         }
 
-        if (HasCycle(dependantAddress))
+        if (HasCycle())
         {
             _dependencies.Remove(dependantAddress);
             foreach (string dep in dependencies)
@@ -84,37 +84,88 @@ public class DependencyGraph
         return _dependants.GetValueOrDefault(cellAddress) ?? [];
     }
 
-    private bool HasCycle(string start)
+    public List<string>? GetTopologicalOrder()
     {
-        HashSet<string> visited = new();
-        HashSet<string> recursionStack = new();
+        var indegree = new Dictionary<string, int>();
 
-        bool Dfs(string node)
+        foreach (var node in _dependencies.Keys)
         {
+            indegree[node] = _dependencies[node].Count;
+        }
+
+        var queue = new Queue<string>();
+        var result = new List<string>();
+        
+        foreach (var (node, deg) in indegree)
+        {
+            if (deg == 0)
+            {
+                queue.Enqueue(node);
+            }
+        }
+
+        while (queue.Count > 0)
+        {
+            var node = queue.Dequeue();
+            result.Add(node);
+
+            foreach (var dependent in _dependants[node])
+            {
+                indegree[dependent]--;
+                if (indegree[dependent] == 0)
+                {
+                    queue.Enqueue(dependent);
+                }
+            }
+        }
+
+        if (result.Count != indegree.Count)
+        {
+            return null;
+        }
+
+        return result;
+    }
+    
+    private bool HasCycle()
+    {
+        var visited = new HashSet<string>();
+        var stack = new HashSet<string>();
+
+        foreach (var node in _dependencies.Keys)
+        {
+            if (DepthFirstSearch(node))
+            {
+                return true;
+            }
+        }
+
+        return false;
+
+        bool DepthFirstSearch(string node)
+        {
+            if (stack.Contains(node))
+            {
+                return true;
+            }
+
             if (!visited.Add(node))
             {
                 return false;
             }
 
-            recursionStack.Add(node);
+            stack.Add(node);
 
-            foreach (string dep in _dependencies.GetValueOrDefault(node) ?? [])
+            foreach (var dep in _dependencies[node])
             {
-                if (recursionStack.Contains(dep))
-                {
-                    return true;
-                }
-
-                if (Dfs(dep))
+                if (DepthFirstSearch(dep))
                 {
                     return true;
                 }
             }
 
-            recursionStack.Remove(node);
+            stack.Remove(node);
             return false;
         }
-
-        return Dfs(start);
     }
 }

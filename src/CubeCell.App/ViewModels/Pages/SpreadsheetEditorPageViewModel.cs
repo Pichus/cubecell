@@ -126,7 +126,7 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
     {
         if (cellCoordinates is null && _lastSelectedCellCoordinates is not null)
         {
-            _cellCalculationService.CalculateAndRerenderDependants(_lastSelectedCellCoordinates.Value);
+            _cellCalculationService.TryCalculateAndRerenderDependants(_lastSelectedCellCoordinates.Value);
             return;
         }
 
@@ -135,7 +135,7 @@ public class SpreadsheetEditorPageViewModel : ViewModelBase, IRoutableViewModel
             return;
         }
 
-        _cellCalculationService.CalculateAndRerenderDependants(cellCoordinates.Value);
+        _cellCalculationService.TryCalculateAndRerenderDependants(cellCoordinates.Value);
     }
 
     private void InitializeSpreadsheet()
