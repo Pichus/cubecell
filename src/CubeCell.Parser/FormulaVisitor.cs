@@ -225,6 +225,8 @@ public class FormulaVisitor : CubeCellBaseVisitor<object>
             BigInteger bi => bi != BigInteger.Zero,
             int i => i != 0,
             long l => l != 0,
+            string s when s.Equals("TRUE", StringComparison.OrdinalIgnoreCase) => true,
+            string s when s.Equals("FALSE", StringComparison.OrdinalIgnoreCase) => false,
             string s => !string.IsNullOrEmpty(s),
             _ => false
         };

@@ -25,6 +25,4 @@ user --> UC_ExportExcel
 user --> UC_ImportExcel
 user --> UC_SyncCloud
 
-UC_EnterFormula ..> UC_CalculateFormula : «include»
-
 @enduml

@@ -11,12 +11,12 @@ public class DependencyExtractor : CubeCellBaseVisitor<object>
 
     public HashSet<string> ExtractDependencies(string formula)
     {
+        _dependencies.Clear();
+        
         if (formula.StartsWith("="))
         {
             formula = formula.Substring(1);
         }
-        
-        _dependencies.Clear();
 
         AntlrInputStream inputStream = new(formula);
 
@@ -30,7 +30,7 @@ public class DependencyExtractor : CubeCellBaseVisitor<object>
 
         Visit(context);
 
-        return _dependencies;
+        return [.._dependencies];
     }
 
     public override object VisitCellRefExpr([NotNull] CubeCellParser.CellRefExprContext context)

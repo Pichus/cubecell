@@ -116,7 +116,7 @@ public class DependencyGraph
         {
             foreach (string d in deps)
             {
-                indegree[d]++;
+                indegree[n]++;
             }
         }
 
