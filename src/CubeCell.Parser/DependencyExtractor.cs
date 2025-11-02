@@ -15,6 +15,8 @@ public class DependencyExtractor : CubeCellBaseVisitor<object>
         {
             formula = formula.Substring(1);
         }
+        
+        _dependencies.Clear();
 
         AntlrInputStream inputStream = new(formula);
 

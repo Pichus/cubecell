@@ -52,6 +52,8 @@ public class DependencyGraph
 
     public bool TrySetDependencies(string dependantAddress, HashSet<string> dependencies)
     {
+        ClearDependencies(dependantAddress);
+        
         _dependencies[dependantAddress] = dependencies;
 
         foreach (string dependency in dependencies)
@@ -67,7 +69,7 @@ public class DependencyGraph
             {
                 _dependants[dep].Remove(dependantAddress);
             }
-
+        
             return false;
         }
 
@@ -86,55 +88,100 @@ public class DependencyGraph
 
     public List<string>? GetTopologicalOrder()
     {
-        var indegree = new Dictionary<string, int>();
-
-        foreach (var node in _dependencies.Keys)
+        // Build all nodes
+        HashSet<string> allNodes = new(_dependencies.Keys);
+        foreach ((string k, HashSet<string> deps) in _dependencies)
+        foreach (string dep in deps)
         {
-            indegree[node] = _dependencies[node].Count;
+            allNodes.Add(dep);
         }
 
-        var queue = new Queue<string>();
-        var result = new List<string>();
-        
-        foreach (var (node, deg) in indegree)
+        foreach ((string k, HashSet<string> children) in _dependants)
         {
-            if (deg == 0)
+            allNodes.Add(k);
+            foreach (string child in children)
             {
-                queue.Enqueue(node);
+                allNodes.Add(child);
             }
         }
 
-        while (queue.Count > 0)
+        // Indegrees (default 0)
+        Dictionary<string, int> indegree = new();
+        foreach (string n in allNodes)
         {
-            var node = queue.Dequeue();
-            result.Add(node);
+            indegree[n] = 0;
+        }
 
-            foreach (var dependent in _dependants[node])
+        foreach ((string n, HashSet<string> deps) in _dependencies)
+        {
+            foreach (string d in deps)
             {
-                indegree[dependent]--;
-                if (indegree[dependent] == 0)
+                indegree[d]++;
+            }
+        }
+
+        Queue<string> q = new();
+        foreach ((string n, int d) in indegree)
+        {
+            if (d == 0)
+            {
+                q.Enqueue(n);
+            }
+        }
+
+        List<string> result = new();
+        while (q.Count > 0)
+        {
+            string n = q.Dequeue();
+            result.Add(n);
+
+            if (_dependants.TryGetValue(n, out HashSet<string>? children))
+            {
+                foreach (string c in children)
                 {
-                    queue.Enqueue(dependent);
+                    indegree[c]--;
+                    if (indegree[c] == 0)
+                    {
+                        q.Enqueue(c);
+                    }
                 }
             }
         }
 
-        if (result.Count != indegree.Count)
+        if (result.Count != allNodes.Count)
         {
             return null;
         }
 
         return result;
     }
-    
+
+
     private bool HasCycle()
     {
-        var visited = new HashSet<string>();
-        var stack = new HashSet<string>();
-
-        foreach (var node in _dependencies.Keys)
+        // Gather all nodes: keys and values from both maps
+        HashSet<string> allNodes = new(_dependencies.Keys);
+        foreach ((string k, HashSet<string> deps) in _dependencies)
+        foreach (string dep in deps)
         {
-            if (DepthFirstSearch(node))
+            allNodes.Add(dep);
+        }
+
+        foreach ((string k, HashSet<string> children) in _dependants)
+        {
+            allNodes.Add(k);
+            foreach (string child in children)
+            {
+                allNodes.Add(child);
+            }
+        }
+
+        HashSet<string> visited = new();
+        HashSet<string> stack = new();
+
+        foreach (string node in allNodes)
+        {
+            if (Dfs(node))
             {
                 return true;
             }
@@ -142,25 +189,24 @@ public class DependencyGraph
 
         return false;
 
-        bool DepthFirstSearch(string node)
+        bool Dfs(string node)
         {
-            if (stack.Contains(node))
+            if (visited.Contains(node))
             {
-                return true;
+                return stack.Contains(node);
             }
 
-            if (!visited.Add(node))
-            {
-                return false;
-            }
-
+            visited.Add(node);
             stack.Add(node);
 
-            foreach (var dep in _dependencies[node])
+            if (_dependencies.TryGetValue(node, out HashSet<string>? deps))
             {
-                if (DepthFirstSearch(dep))
+                foreach (string dep in deps)
                 {
-                    return true;
+                    if (Dfs(dep))
+                    {
+                        return true;
+                    }
                 }
             }
 

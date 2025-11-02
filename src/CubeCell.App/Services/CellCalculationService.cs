@@ -37,8 +37,7 @@ public class CellCalculationService
 
         string cellAddress = CellAddressUtils.CoordinatesToAddress(cellCoordinates);
         HashSet<string> dependencies = _dependencyExtractor.ExtractDependencies(cellModel.Formula);
-
-        _dependencyGraph.ClearDependencies(cellAddress);
+        
         if (!_dependencyGraph.TrySetDependencies(cellAddress, dependencies))
         {
             cellModel.Value = "#ERROR";
